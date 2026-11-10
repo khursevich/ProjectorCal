@@ -1,0 +1,1125 @@
+[
+ {
+  "mode": "sdr",
+  "order": 1,
+  "name": "Gray 100%",
+  "file": "SDR/SDR_01_gray_100.mp4",
+  "kind": "gray",
+  "stim": 1.0,
+  "rgb": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 2,
+  "name": "Gray 95%",
+  "file": "SDR/SDR_02_gray_095.mp4",
+  "kind": "gray",
+  "stim": 0.95,
+  "rgb": [
+   0.95,
+   0.95,
+   0.95
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 3,
+  "name": "Gray 90%",
+  "file": "SDR/SDR_03_gray_090.mp4",
+  "kind": "gray",
+  "stim": 0.9,
+  "rgb": [
+   0.9,
+   0.9,
+   0.9
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 4,
+  "name": "Gray 85%",
+  "file": "SDR/SDR_04_gray_085.mp4",
+  "kind": "gray",
+  "stim": 0.85,
+  "rgb": [
+   0.85,
+   0.85,
+   0.85
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 5,
+  "name": "Gray 80%",
+  "file": "SDR/SDR_05_gray_080.mp4",
+  "kind": "gray",
+  "stim": 0.8,
+  "rgb": [
+   0.8,
+   0.8,
+   0.8
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 6,
+  "name": "Gray 75%",
+  "file": "SDR/SDR_06_gray_075.mp4",
+  "kind": "gray",
+  "stim": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.75
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 7,
+  "name": "Gray 70%",
+  "file": "SDR/SDR_07_gray_070.mp4",
+  "kind": "gray",
+  "stim": 0.7,
+  "rgb": [
+   0.7,
+   0.7,
+   0.7
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 8,
+  "name": "Gray 65%",
+  "file": "SDR/SDR_08_gray_065.mp4",
+  "kind": "gray",
+  "stim": 0.65,
+  "rgb": [
+   0.65,
+   0.65,
+   0.65
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 9,
+  "name": "Gray 60%",
+  "file": "SDR/SDR_09_gray_060.mp4",
+  "kind": "gray",
+  "stim": 0.6,
+  "rgb": [
+   0.6,
+   0.6,
+   0.6
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 10,
+  "name": "Gray 55%",
+  "file": "SDR/SDR_10_gray_055.mp4",
+  "kind": "gray",
+  "stim": 0.55,
+  "rgb": [
+   0.55,
+   0.55,
+   0.55
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 11,
+  "name": "Gray 50%",
+  "file": "SDR/SDR_11_gray_050.mp4",
+  "kind": "gray",
+  "stim": 0.5,
+  "rgb": [
+   0.5,
+   0.5,
+   0.5
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 12,
+  "name": "Gray 45%",
+  "file": "SDR/SDR_12_gray_045.mp4",
+  "kind": "gray",
+  "stim": 0.45,
+  "rgb": [
+   0.45,
+   0.45,
+   0.45
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 13,
+  "name": "Gray 40%",
+  "file": "SDR/SDR_13_gray_040.mp4",
+  "kind": "gray",
+  "stim": 0.4,
+  "rgb": [
+   0.4,
+   0.4,
+   0.4
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 14,
+  "name": "Gray 35%",
+  "file": "SDR/SDR_14_gray_035.mp4",
+  "kind": "gray",
+  "stim": 0.35,
+  "rgb": [
+   0.35,
+   0.35,
+   0.35
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 15,
+  "name": "Gray 30%",
+  "file": "SDR/SDR_15_gray_030.mp4",
+  "kind": "gray",
+  "stim": 0.3,
+  "rgb": [
+   0.3,
+   0.3,
+   0.3
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 16,
+  "name": "Gray 25%",
+  "file": "SDR/SDR_16_gray_025.mp4",
+  "kind": "gray",
+  "stim": 0.25,
+  "rgb": [
+   0.25,
+   0.25,
+   0.25
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 17,
+  "name": "Gray 20%",
+  "file": "SDR/SDR_17_gray_020.mp4",
+  "kind": "gray",
+  "stim": 0.2,
+  "rgb": [
+   0.2,
+   0.2,
+   0.2
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 18,
+  "name": "Gray 15%",
+  "file": "SDR/SDR_18_gray_015.mp4",
+  "kind": "gray",
+  "stim": 0.15,
+  "rgb": [
+   0.15,
+   0.15,
+   0.15
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 19,
+  "name": "Gray 10%",
+  "file": "SDR/SDR_19_gray_010.mp4",
+  "kind": "gray",
+  "stim": 0.1,
+  "rgb": [
+   0.1,
+   0.1,
+   0.1
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 20,
+  "name": "Gray 5%",
+  "file": "SDR/SDR_20_gray_005.mp4",
+  "kind": "gray",
+  "stim": 0.05,
+  "rgb": [
+   0.05,
+   0.05,
+   0.05
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 21,
+  "name": "Gray 0%",
+  "file": "SDR/SDR_21_gray_000.mp4",
+  "kind": "gray",
+  "stim": 0.0,
+  "rgb": [
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ {
+  "mode": "sdr",
+  "order": 22,
+  "name": "Red 100%/100",
+  "file": "SDR/SDR_22_red_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "red",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "tx": 0.639999925519409,
+  "ty": 0.33000006827387507,
+  "tY": 0.2126729
+ },
+ {
+  "mode": "sdr",
+  "order": 23,
+  "name": "Yellow 100%/100",
+  "file": "SDR/SDR_23_yellow_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "yellow",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   1.0,
+   1.0,
+   0.0
+  ],
+  "tx": 0.419320092998004,
+  "ty": 0.5052458269201395,
+  "tY": 0.9278251
+ },
+ {
+  "mode": "sdr",
+  "order": 24,
+  "name": "Green 100%/100",
+  "file": "SDR/SDR_24_green_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "green",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "tx": 0.3000000083898227,
+  "ty": 0.6000000167796454,
+  "tY": 0.7151522
+ },
+ {
+  "mode": "sdr",
+  "order": 25,
+  "name": "Cyan 100%/100",
+  "file": "SDR/SDR_25_cyan_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "cyan",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   0.0,
+   1.0,
+   1.0
+  ],
+  "tx": 0.22465563312474432,
+  "ty": 0.32876025920596097,
+  "tY": 0.7873272
+ },
+ {
+  "mode": "sdr",
+  "order": 26,
+  "name": "Blue 100%/100",
+  "file": "SDR/SDR_26_blue_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "blue",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "tx": 0.15000000831312826,
+  "ty": 0.060000003325251315,
+  "tY": 0.072175
+ },
+ {
+  "mode": "sdr",
+  "order": 27,
+  "name": "Magenta 100%/100",
+  "file": "SDR/SDR_27_magenta_sat100_amp100.mp4",
+  "kind": "color",
+  "hue": "magenta",
+  "sat": 1.0,
+  "amp": 1.0,
+  "rgb": [
+   1.0,
+   0.0,
+   1.0
+  ],
+  "tx": 0.3209377411185291,
+  "ty": 0.1541902211986945,
+  "tY": 0.2848479
+ },
+ {
+  "mode": "sdr",
+  "order": 28,
+  "name": "Red sat 25% (amp 75%)",
+  "file": "SDR/SDR_28_red_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "red",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.5625,
+   0.5625
+  ],
+  "tx": 0.3697261282858138,
+  "ty": 0.32919329685371695,
+  "tY": 0.3045266411360961
+ },
+ {
+  "mode": "sdr",
+  "order": 29,
+  "name": "Red sat 50% (amp 75%)",
+  "file": "SDR/SDR_29_red_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "red",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.375,
+   0.375
+  ],
+  "tx": 0.46839459240341236,
+  "ty": 0.32948782372881824,
+  "tY": 0.18141275542298615
+ },
+ {
+  "mode": "sdr",
+  "order": 30,
+  "name": "Red sat 75% (amp 75%)",
+  "file": "SDR/SDR_30_red_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "red",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.1875,
+   0.1875
+  ],
+  "tx": 0.5911165187097643,
+  "ty": 0.3298541505565911,
+  "tY": 0.12079465806193265
+ },
+ {
+  "mode": "sdr",
+  "order": 31,
+  "name": "Red sat 100% (amp 75%)",
+  "file": "SDR/SDR_31_red_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "red",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.0,
+   0.0
+  ],
+  "tx": 0.639999925519409,
+  "ty": 0.33000006827387507,
+  "tY": 0.10662503464202569
+ },
+ {
+  "mode": "sdr",
+  "order": 32,
+  "name": "Yellow sat 25% (amp 75%)",
+  "file": "SDR/SDR_32_yellow_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "yellow",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.5625
+  ],
+  "tx": 0.35273836176611334,
+  "ty": 0.39517146022965016,
+  "tY": 0.4833133743337166
+ },
+ {
+  "mode": "sdr",
+  "order": 33,
+  "name": "Yellow sat 50% (amp 75%)",
+  "file": "SDR/SDR_33_yellow_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "yellow",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.375
+  ],
+  "tx": 0.3895855813934344,
+  "ty": 0.45608808540205276,
+  "tY": 0.47202741253620256
+ },
+ {
+  "mode": "sdr",
+  "order": 34,
+  "name": "Yellow sat 75% (amp 75%)",
+  "file": "SDR/SDR_34_yellow_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "yellow",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.1875
+  ],
+  "tx": 0.4131327659265603,
+  "ty": 0.495016803188028,
+  "tY": 0.4664704964573042
+ },
+ {
+  "mode": "sdr",
+  "order": 35,
+  "name": "Yellow sat 100% (amp 75%)",
+  "file": "SDR/SDR_35_yellow_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "yellow",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.0
+  ],
+  "tx": 0.419320092998004,
+  "ty": 0.5052458269201395,
+  "tY": 0.465171554200093
+ },
+ {
+  "mode": "sdr",
+  "order": 36,
+  "name": "Green sat 25% (amp 75%)",
+  "file": "SDR/SDR_36_green_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "green",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.5625,
+   0.75,
+   0.5625
+  ],
+  "tx": 0.30915552661346335,
+  "ty": 0.4050591528090745,
+  "tY": 0.43014554092613677
+ },
+ {
+  "mode": "sdr",
+  "order": 37,
+  "name": "Green sat 50% (amp 75%)",
+  "file": "SDR/SDR_37_green_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "green",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.375,
+   0.75,
+   0.375
+  ],
+  "tx": 0.3047527943789691,
+  "ty": 0.4988028825094021,
+  "tY": 0.3856040443206348
+ },
+ {
+  "mode": "sdr",
+  "order": 38,
+  "name": "Green sat 75% (amp 75%)",
+  "file": "SDR/SDR_38_green_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "green",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.1875,
+   0.75,
+   0.1875
+  ],
+  "tx": 0.3011035277956547,
+  "ty": 0.5765036923634363,
+  "tY": 0.3636729618744909
+ },
+ {
+  "mode": "sdr",
+  "order": 39,
+  "name": "Green sat 100% (amp 75%)",
+  "file": "SDR/SDR_39_green_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "green",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.0,
+   0.75,
+   0.0
+  ],
+  "tx": 0.3000000083898227,
+  "ty": 0.6000000167796454,
+  "tY": 0.35854651955806727
+ },
+ {
+  "mode": "sdr",
+  "order": 40,
+  "name": "Cyan sat 25% (amp 75%)",
+  "file": "SDR/SDR_40_cyan_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "cyan",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.5625,
+   0.75,
+   0.75
+  ],
+  "tx": 0.27403130951298893,
+  "ty": 0.32890764635546915,
+  "tY": 0.4481891580310527
+ },
+ {
+  "mode": "sdr",
+  "order": 41,
+  "name": "Cyan sat 50% (amp 75%)",
+  "file": "SDR/SDR_41_cyan_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "cyan",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.375,
+   0.75,
+   0.75
+  ],
+  "tx": 0.2448050065136837,
+  "ty": 0.32882040539382923,
+  "tY": 0.41493362322306476
+ },
+ {
+  "mode": "sdr",
+  "order": 42,
+  "name": "Cyan sat 75% (amp 75%)",
+  "file": "SDR/SDR_42_cyan_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "cyan",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.1875,
+   0.75,
+   0.75
+  ],
+  "tx": 0.2286294814653677,
+  "ty": 0.3287721212040609,
+  "tY": 0.3985594568558192
+ },
+ {
+  "mode": "sdr",
+  "order": 43,
+  "name": "Cyan sat 100% (amp 75%)",
+  "file": "SDR/SDR_43_cyan_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "cyan",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.0,
+   0.75,
+   0.75
+  ],
+  "tx": 0.22465563312474432,
+  "ty": 0.3287602592059609,
+  "tY": 0.39473195679660683
+ },
+ {
+  "mode": "sdr",
+  "order": 44,
+  "name": "Blue sat 25% (amp 75%)",
+  "file": "SDR/SDR_44_blue_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "blue",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.5625,
+   0.5625,
+   0.75
+  ],
+  "tx": 0.2667633177864613,
+  "ty": 0.253035646964489,
+  "tY": 0.26940242483343224
+ },
+ {
+  "mode": "sdr",
+  "order": 45,
+  "name": "Blue sat 50% (amp 75%)",
+  "file": "SDR/SDR_45_blue_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "blue",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.375,
+   0.375,
+   0.75
+  ],
+  "tx": 0.21042149419334835,
+  "ty": 0.15989011837197462,
+  "tY": 0.1243189661098484
+ },
+ {
+  "mode": "sdr",
+  "order": 46,
+  "name": "Blue sat 75% (amp 75%)",
+  "file": "SDR/SDR_46_blue_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "blue",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.1875,
+   0.1875,
+   0.75
+  ],
+  "tx": 0.1639920900377255,
+  "ty": 0.08313201725790971,
+  "tY": 0.052883618460447736
+ },
+ {
+  "mode": "sdr",
+  "order": 47,
+  "name": "Blue sat 100% (amp 75%)",
+  "file": "SDR/SDR_47_blue_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "blue",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.0,
+   0.0,
+   0.75
+  ],
+  "tx": 0.15000000831312826,
+  "ty": 0.06000000332525131,
+  "tY": 0.03618543723853958
+ },
+ {
+  "mode": "sdr",
+  "order": 48,
+  "name": "Magenta sat 25% (amp 75%)",
+  "file": "SDR/SDR_48_magenta_sat025_amp075.mp4",
+  "kind": "color",
+  "hue": "magenta",
+  "sat": 0.25,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.5625,
+   0.75
+  ],
+  "tx": 0.31582030277676665,
+  "ty": 0.2631515958900123,
+  "tY": 0.32257025824101204
+ },
+ {
+  "mode": "sdr",
+  "order": 49,
+  "name": "Magenta sat 50% (amp 75%)",
+  "file": "SDR/SDR_49_magenta_sat050_amp075.mp4",
+  "kind": "color",
+  "hue": "magenta",
+  "sat": 0.5,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.375,
+   0.75
+  ],
+  "tx": 0.3186570717823378,
+  "ty": 0.20275062378522504,
+  "tY": 0.21074233432541617
+ },
+ {
+  "mode": "sdr",
+  "order": 50,
+  "name": "Magenta sat 75% (amp 75%)",
+  "file": "SDR/SDR_50_magenta_sat075_amp075.mp4",
+  "kind": "color",
+  "hue": "magenta",
+  "sat": 0.75,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.1875,
+   0.75
+  ],
+  "tx": 0.3204637906543382,
+  "ty": 0.16428165575343648,
+  "tY": 0.15568115304326102
+ },
+ {
+  "mode": "sdr",
+  "order": 51,
+  "name": "Magenta sat 100% (amp 75%)",
+  "file": "SDR/SDR_51_magenta_sat100_amp075.mp4",
+  "kind": "color",
+  "hue": "magenta",
+  "sat": 1.0,
+  "amp": 0.75,
+  "rgb": [
+   0.75,
+   0.0,
+   0.75
+  ],
+  "tx": 0.320937741118529,
+  "ty": 0.15419022119869452,
+  "tY": 0.14281047188056528
+ },
+ {
+  "mode": "sdr",
+  "order": 52,
+  "name": "PLUGE (black)",
+  "file": "SDR/SDR_52_pluge_black.mp4",
+  "kind": "test",
+  "note": "background=16; 8-bit bars: 4,8,12 (below black, invisible) | 16 (same as background) | 20,24,28 (above black)"
+ },
+ {
+  "mode": "sdr",
+  "order": 53,
+  "name": "White clipping",
+  "file": "SDR/SDR_53_clip_white.mp4",
+  "kind": "test",
+  "note": "background=16; 8-bit bars: 200,215,225,229,231,233,235,240,250"
+ },
+ {
+  "mode": "hdr10",
+  "order": 1,
+  "name": "HDR gray PQ 100% (≈10000 nits)",
+  "file": "HDR10/HDR_01_gray_100.mp4",
+  "kind": "gray",
+  "stim": 1.0,
+  "rgb": [
+   1.0,
+   1.0,
+   1.0
+  ],
+  "tnits": 10000.0
+ },
+ {
+  "mode": "hdr10",
+  "order": 2,
+  "name": "HDR gray PQ 95% (≈6228 nits)",
+  "file": "HDR10/HDR_02_gray_095.mp4",
+  "kind": "gray",
+  "stim": 0.95,
+  "rgb": [
+   0.95,
+   0.95,
+   0.95
+  ],
+  "tnits": 6227.953507194
+ },
+ {
+  "mode": "hdr10",
+  "order": 3,
+  "name": "HDR gray PQ 90% (≈3906 nits)",
+  "file": "HDR10/HDR_03_gray_090.mp4",
+  "kind": "gray",
+  "stim": 0.9,
+  "rgb": [
+   0.9,
+   0.9,
+   0.9
+  ],
+  "tnits": 3905.6446528344222
+ },
+ {
+  "mode": "hdr10",
+  "order": 4,
+  "name": "HDR gray PQ 85% (≈2461 nits)",
+  "file": "HDR10/HDR_04_gray_085.mp4",
+  "kind": "gray",
+  "stim": 0.85,
+  "rgb": [
+   0.85,
+   0.85,
+   0.85
+  ],
+  "tnits": 2461.135092265092
+ },
+ {
+  "mode": "hdr10",
+  "order": 5,
+  "name": "HDR gray PQ 80% (≈1555 nits)",
+  "file": "HDR10/HDR_05_gray_080.mp4",
+  "kind": "gray",
+  "stim": 0.8,
+  "rgb": [
+   0.8,
+   0.8,
+   0.8
+  ],
+  "tnits": 1555.1783642891169
+ },
+ {
+  "mode": "hdr10",
+  "order": 6,
+  "name": "HDR gray PQ 75% (≈983 nits)",
+  "file": "HDR10/HDR_06_gray_075.mp4",
+  "kind": "gray",
+  "stim": 0.75,
+  "rgb": [
+   0.75,
+   0.75,
+   0.75
+  ],
+  "tnits": 983.3778555870275
+ },
+ {
+  "mode": "hdr10",
+  "order": 7,
+  "name": "HDR gray PQ 70% (≈621 nits)",
+  "file": "HDR10/HDR_07_gray_070.mp4",
+  "kind": "gray",
+  "stim": 0.7,
+  "rgb": [
+   0.7,
+   0.7,
+   0.7
+  ],
+  "tnits": 620.8793816476253
+ },
+ {
+  "mode": "hdr10",
+  "order": 8,
+  "name": "HDR gray PQ 65% (≈390 nits)",
+  "file": "HDR10/HDR_08_gray_065.mp4",
+  "kind": "gray",
+  "stim": 0.65,
+  "rgb": [
+   0.65,
+   0.65,
+   0.65
+  ],
+  "tnits": 390.4947397655172
+ },
+ {
+  "mode": "hdr10",
+  "order": 9,
+  "name": "HDR gray PQ 60% (≈244 nits)",
+  "file": "HDR10/HDR_09_gray_060.mp4",
+  "kind": "gray",
+  "stim": 0.6,
+  "rgb": [
+   0.6,
+   0.6,
+   0.6
+  ],
+  "tnits": 244.00519233637024
+ },
+ {
+  "mode": "hdr10",
+  "order": 10,
+  "name": "HDR gray PQ 55% (≈151 nits)",
+  "file": "HDR10/HDR_10_gray_055.mp4",
+  "kind": "gray",
+  "stim": 0.55,
+  "rgb": [
+   0.55,
+   0.55,
+   0.55
+  ],
+  "tnits": 151.02064944262074
+ },
+ {
+  "mode": "hdr10",
+  "order": 11,
+  "name": "HDR gray PQ 50% (≈92 nits)",
+  "file": "HDR10/HDR_11_gray_050.mp4",
+  "kind": "gray",
+  "stim": 0.5,
+  "rgb": [
+   0.5,
+   0.5,
+   0.5
+  ],
+  "tnits": 92.24570899406527
+ },
+ {
+  "mode": "hdr10",
+  "order": 12,
+  "name": "HDR gray PQ 45% (≈55 nits)",
+  "file": "HDR10/HDR_12_gray_045.mp4",
+  "kind": "gray",
+  "stim": 0.45,
+  "rgb": [
+   0.45,
+   0.45,
+   0.45
+  ],
+  "tnits": 55.35668812817862
+ },
+ {
+  "mode": "hdr10",
+  "order": 13,
+  "name": "HDR gray PQ 40% (≈32 nits)",
+  "file": "HDR10/HDR_13_gray_040.mp4",
+  "kind": "gray",
+  "stim": 0.4,
+  "rgb": [
+   0.4,
+   0.4,
+   0.4
+  ],
+  "tnits": 32.447917853800384
+ },
+ {
+  "mode": "hdr10",
+  "order": 14,
+  "name": "HDR gray PQ 35% (≈18 nits)",
+  "file": "HDR10/HDR_14_gray_035.mp4",
+  "kind": "gray",
+  "stim": 0.35,
+  "rgb": [
+   0.35,
+   0.35,
+   0.35
+  ],
+  "tnits": 18.433567271647576
+ },
+ {
+  "mode": "hdr10",
+  "order": 15,
+  "name": "HDR gray PQ 30% (≈10 nits)",
+  "file": "HDR10/HDR_15_gray_030.mp4",
+  "kind": "gray",
+  "stim": 0.3,
+  "rgb": [
+   0.3,
+   0.3,
+   0.3
+  ],
+  "tnits": 10.038226310511204
+ },
+ {
+  "mode": "hdr10",
+  "order": 16,
+  "name": "HDR gray PQ 25% (≈5 nits)",
+  "file": "HDR10/HDR_16_gray_025.mp4",
+  "kind": "gray",
+  "stim": 0.25,
+  "rgb": [
+   0.25,
+   0.25,
+   0.25
+  ],
+  "tnits": 5.154176009833007
+ },
+ {
+  "mode": "hdr10",
+  "order": 17,
+  "name": "HDR gray PQ 20% (≈2 nits)",
+  "file": "HDR10/HDR_17_gray_020.mp4",
+  "kind": "gray",
+  "stim": 0.2,
+  "rgb": [
+   0.2,
+   0.2,
+   0.2
+  ],
+  "tnits": 2.4292632970075467
+ },
+ {
+  "mode": "hdr10",
+  "order": 18,
+  "name": "HDR gray PQ 15% (≈1 nits)",
+  "file": "HDR10/HDR_18_gray_015.mp4",
+  "kind": "gray",
+  "stim": 0.15,
+  "rgb": [
+   0.15,
+   0.15,
+   0.15
+  ],
+  "tnits": 1.0010649416565693
+ },
+ {
+  "mode": "hdr10",
+  "order": 19,
+  "name": "HDR gray PQ 10% (≈0 nits)",
+  "file": "HDR10/HDR_19_gray_010.mp4",
+  "kind": "gray",
+  "stim": 0.1,
+  "rgb": [
+   0.1,
+   0.1,
+   0.1
+  ],
+  "tnits": 0.3245655914644875
+ },
+ {
+  "mode": "hdr10",
+  "order": 20,
+  "name": "HDR gray PQ 5% (≈0 nits)",
+  "file": "HDR10/HDR_20_gray_005.mp4",
+  "kind": "gray",
+  "stim": 0.05,
+  "rgb": [
+   0.05,
+   0.05,
+   0.05
+  ],
+  "tnits": 0.060001635527941945
+ },
+ {
+  "mode": "hdr10",
+  "order": 21,
+  "name": "HDR gray PQ 0% (≈0 nits)",
+  "file": "HDR10/HDR_21_gray_000.mp4",
+  "kind": "gray",
+  "stim": 0.0,
+  "rgb": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "tnits": 0.0
+ }
+]

@@ -1,0 +1,234 @@
+{
+ "mode": "hdr",
+ "version": 3,
+ "segments": [
+  {
+   "i": 0,
+   "patchId": "HDR_13",
+   "start": 0,
+   "dur": 8,
+   "role": "pre",
+   "tr": 2.3
+  },
+  {
+   "i": 1,
+   "patchId": "HDR_06",
+   "start": 8,
+   "dur": 12,
+   "role": "mark",
+   "tr": 1.14
+  },
+  {
+   "i": 2,
+   "patchId": "HDR_13",
+   "start": 20,
+   "dur": 4,
+   "role": "mark",
+   "tr": 2.3
+  },
+  {
+   "i": 3,
+   "patchId": "HDR_01",
+   "start": 24,
+   "dur": 9,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 4,
+   "patchId": "HDR_11",
+   "start": 33,
+   "dur": 8,
+   "role": "patch",
+   "tr": 1.45
+  },
+  {
+   "i": 5,
+   "patchId": "HDR_02",
+   "start": 41,
+   "dur": 8,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 6,
+   "patchId": "HDR_12",
+   "start": 49,
+   "dur": 9,
+   "role": "patch",
+   "tr": 1.67
+  },
+  {
+   "i": 7,
+   "patchId": "HDR_03",
+   "start": 58,
+   "dur": 8,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 8,
+   "patchId": "HDR_13",
+   "start": 66,
+   "dur": 12,
+   "role": "patch",
+   "tr": 2.3
+  },
+  {
+   "i": 9,
+   "patchId": "HDR_04",
+   "start": 78,
+   "dur": 9,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 10,
+   "patchId": "HDR_14",
+   "start": 87,
+   "dur": 16,
+   "role": "patch",
+   "tr": 3.55
+  },
+  {
+   "i": 11,
+   "patchId": "HDR_05",
+   "start": 103,
+   "dur": 10,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 12,
+   "patchId": "HDR_15",
+   "start": 113,
+   "dur": 17,
+   "role": "patch",
+   "tr": 5.8
+  },
+  {
+   "i": 13,
+   "patchId": "HDR_06",
+   "start": 130,
+   "dur": 13,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 14,
+   "patchId": "HDR_16",
+   "start": 143,
+   "dur": 22,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 15,
+   "patchId": "HDR_07",
+   "start": 165,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 16,
+   "patchId": "HDR_17",
+   "start": 180,
+   "dur": 22,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 17,
+   "patchId": "HDR_08",
+   "start": 202,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 18,
+   "patchId": "HDR_18",
+   "start": 217,
+   "dur": 22,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 19,
+   "patchId": "HDR_09",
+   "start": 239,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.16
+  },
+  {
+   "i": 20,
+   "patchId": "HDR_19",
+   "start": 254,
+   "dur": 28,
+   "role": "patch",
+   "tr": 10.0
+  },
+  {
+   "i": 21,
+   "patchId": "HDR_10",
+   "start": 282,
+   "dur": 19,
+   "role": "patch",
+   "tr": 1.29
+  },
+  {
+   "i": 22,
+   "patchId": "HDR_20",
+   "start": 301,
+   "dur": 28,
+   "role": "patch",
+   "tr": 10.0
+  },
+  {
+   "i": 23,
+   "patchId": "HDR_21",
+   "start": 329,
+   "dur": 39,
+   "role": "patch",
+   "tr": 10.0
+  },
+  {
+   "i": 24,
+   "patchId": "HDR_06",
+   "start": 368,
+   "dur": 16,
+   "role": "drift",
+   "tr": 1.14
+  },
+  {
+   "i": 25,
+   "patchId": "HDR_13",
+   "start": 384,
+   "dur": 5,
+   "role": "end",
+   "tr": 2.3
+  },
+  {
+   "i": 26,
+   "patchId": "HDR_06",
+   "start": 389,
+   "dur": 6,
+   "role": "end",
+   "tr": 1.14
+  },
+  {
+   "i": 27,
+   "patchId": "HDR_13",
+   "start": 395,
+   "dur": 5,
+   "role": "end",
+   "tr": 2.3
+  }
+ ],
+ "anchor": 20,
+ "endAnchor": 395,
+ "duration": 400,
+ "file": "ProjectorCal_AUTO_HDR10_v3.mp4"
+}

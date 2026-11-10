@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 190" font-family="Helvetica, Arial, sans-serif" font-size="14">
+  <rect width="900" height="190" fill="#16181d"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a93a6"/>
+    </marker>
+  </defs>
+  <g fill="#232733" stroke="#3a4152">
+    <rect x="20" y="40" width="150" height="70" rx="10"/>
+    <rect x="200" y="40" width="150" height="70" rx="10"/>
+    <rect x="380" y="40" width="150" height="70" rx="10"/>
+    <rect x="560" y="40" width="150" height="70" rx="10"/>
+    <rect x="740" y="40" width="140" height="70" rx="10"/>
+  </g>
+  <g fill="#e6e9ef" text-anchor="middle">
+    <text x="95" y="70" font-weight="bold">1. Enter settings</text>
+    <text x="95" y="90" fill="#a9b1c3" font-size="12">everything in the menu</text>
+    <text x="275" y="70" font-weight="bold">2. Play one file</text>
+    <text x="275" y="90" fill="#a9b1c3" font-size="12">Plex or USB · 14 min</text>
+    <text x="455" y="70" font-weight="bold">3. Auto analysis</text>
+    <text x="455" y="90" fill="#a9b1c3" font-size="12">51 patches · checks</text>
+    <text x="635" y="70" font-weight="bold">4. Verdict</text>
+    <text x="635" y="90" fill="#a9b1c3" font-size="12">"Point 6: −11 → −3"</text>
+    <text x="810" y="70" font-weight="bold">5. Set &amp; repeat</text>
+    <text x="810" y="90" fill="#a9b1c3" font-size="12">it learns each step</text>
+  </g>
+  <g stroke="#8a93a6" stroke-width="2" fill="none" marker-end="url(#a)">
+    <line x1="172" y1="75" x2="196" y2="75"/>
+    <line x1="352" y1="75" x2="376" y2="75"/>
+    <line x1="532" y1="75" x2="556" y2="75"/>
+    <line x1="712" y1="75" x2="736" y2="75"/>
+    <path d="M810,112 C810,165 95,165 95,114"/>
+  </g>
+  <text x="450" y="178" fill="#8a93a6" font-size="12" text-anchor="middle">projector → colorimeter (ArgyllCMS spotread) → ProjectorCal in your browser</text>
+</svg>

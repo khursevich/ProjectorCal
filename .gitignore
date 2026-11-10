@@ -1,0 +1,13 @@
+# build output
+dist/
+*.zip
+# video patches are distributed via GitHub Releases (ProjectorCal-patches-v<N>.zip)
+assets/patches/**/*.mp4
+# Python
+__pycache__/
+*.pyc
+# OS
+.DS_Store
+# local data
+sessions/
+*.spotread.log
