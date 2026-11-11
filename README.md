@@ -62,7 +62,7 @@ It runs locally in your browser, works offline, has no accounts and no telemetry
 ### From source (macOS / Linux)
 
 ```bash
-git clone https://github.com/<you>/ProjectorCal.git
+git clone https://github.com/khursevich/ProjectorCal.git
 cd ProjectorCal
 unzip ProjectorCal-patches-v3.zip -d assets/   # the video patches → assets/patches/
 python3 -m projectorcal            # opens the UI in your browser
@@ -80,7 +80,7 @@ SDR is Rec.709; HDR10 is PQ / BT.2020 with mastering metadata (P3-D65, 1000 nits
 Play the files from your Plex client (streaming box, TV app).
 
 **USB stick.** Copy the folder to an exFAT-formatted stick, plug it into the projector and open the files in its
-built-in media player. Use the same player you will watch movies with if possible: the calibration is only valid for
+built-in media player. If possible, use the same player you watch movies on: the calibration is only valid for
 the signal path you measured.
 
 Either way, make sure the player does **not** alter the picture (no "enhance", no HDR conversion of SDR, output as
