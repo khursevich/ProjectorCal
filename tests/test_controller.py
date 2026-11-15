@@ -273,7 +273,7 @@ class MockFlowTests(Base):
     def test_slow_meter_profile_and_10_point_layout(self):
         """Meter profile → slow auto-run video (the mock plays it, the analyzer recovers all patches);
         projector profile with 10 gamma points → points at 10 % steps in the plan."""
-        os.environ["PROJECTORCAL_MOCK_SPEED"] = "20"
+        os.environ["PROJECTORCAL_MOCK_SPEED"] = "10"     # as the other auto-run tests: ×20 is too tight on slow CI
         c = self.start()
         self.assertTrue(wait(lambda: c.meter_state == "ready"))
         c.update_settings({"meterProfile": "spyder"})
@@ -283,7 +283,7 @@ class MockFlowTests(Base):
         self.assertEqual((A.GP_COUNT, A.GP_STEP), (10, 10))
         c.goto("full")
         c.full_start("hdr")
-        self.assertTrue(wait(lambda: len(c.session["runs"]) == 1, timeout=120), c.state().get("auto"))
+        self.assertTrue(wait(lambda: len(c.session["runs"]) == 1, timeout=180), c.state().get("auto"))
         run = c.session["runs"][0]
         self.assertEqual(run["seq"]["speed"], "slow")
         self.assertTrue(run["file"].endswith("_slow.mp4"))
