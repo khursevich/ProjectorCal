@@ -49,8 +49,8 @@ choose the slow video). If only one or two patches are flagged, the verdict is s
 
 Yes — Windows 10 (version 1809 or newer) and Windows 11, with `ProjectorCal-Windows.zip`. It runs `spotread` on the
 Windows pseudo console (ConPTY), the same way it uses a terminal on macOS and Linux. Windows support is new (beta):
-it passes the simulated tests but has not yet been confirmed on real Windows hardware, so please report how it
-works. If the meter link misbehaves, try **Settings → Reading source → spotread -O (one reading per launch)**.
+the meter link passes automated tests on Windows, but nobody has calibrated with a real meter on Windows yet,
+so please report how it works. If the meter link misbehaves, try **Settings → Reading source → spotread -O (one reading per launch)**.
 
 ### Windows: "spotread not found" or the meter is not found
 

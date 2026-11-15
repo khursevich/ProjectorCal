@@ -73,8 +73,8 @@ Download from [Releases](https://github.com/khursevich/ProjectorCal/releases/lat
 Put the patches into `assets/` next to the program (`assets/patches/…`) — or just copy the `patches` folder to your
 USB stick / Plex. *Windows meter drivers:* the i1Display family / ColorMunki Display / Calibrite need none; Spyder,
 i1Pro and older meters need the ArgyllCMS USB driver (argyllcms.com → *Installing on MS Windows*). Windows support
-is new: it has passed simulated tests but not yet a run on real Windows hardware — please
-[report](https://github.com/khursevich/ProjectorCal/issues) how it goes.
+is new: the meter link passes automated tests on Windows, but nobody has calibrated with a real meter on Windows
+yet — please [report](https://github.com/khursevich/ProjectorCal/issues) how it goes.
 
 **From source (any system)** — Python 3.8+, standard library only:
 
