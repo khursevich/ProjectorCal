@@ -371,6 +371,10 @@ def plan(an, settings, sens):
                       "text": "Steps out of tolerance: %s. Corrections computed for all points at once (%.1f%%/step%s)%s." % (
                           ", ".join("%d%%" % A.gp_stim(k) for k in q), per or A.GP_PER_STEP,
                           ", learned" if per else "", after), "set": sets})
+    if not A.GP_COUNT:
+        it = _plan_gamma_preset(gray, sdr)
+        if it:
+            items.append(it)
     for col in ("red", "yellow", "green", "cyan", "blue", "magenta"):
         it = _plan_cms(an, sdr, sens, col)
         if it:
@@ -382,6 +386,24 @@ def plan(an, settings, sens):
         items.append({"group": "ok", "level": "good", "title": "SDR within tolerance ✓",
                       "text": "Gray, gamma and colors are fine. Next — optional small tweaks or HDR."})
     return items
+
+
+def _plan_gamma_preset(gray, sdr):
+    """A projector without luminance gamma points: only the gamma preset can move the curve."""
+    devs = [r["dev"] for r in gray["rows"] if r.get("measured") and r.get("dev") is not None and 20 <= r["stim"] <= 80]
+    if len(devs) < 4:
+        return None
+    mean = sum(devs) / len(devs)
+    out = [r["stim"] for r in gray["rows"] if r.get("measured") and r.get("dev") is not None
+           and 10 <= r["stim"] < 100 and abs(r["dev"]) > A.gp_tol(r["stim"])[1]]
+    if abs(mean) <= 3 and not out:
+        return None
+    way = ("too bright in the mids → choose a darker (higher) gamma preset, e.g. 2.2 → 2.4 or BT.1886"
+           if mean > 0 else "too dark in the mids → choose a brighter (lower) gamma preset, e.g. 2.4 → 2.2")
+    return {"group": "gammaPreset", "level": "bad" if abs(mean) > 3 else "ok", "title": "Gamma (preset)",
+            "text": "Mid-gray luminance is %+.1f %% off the target on average (20–80 %%): %s. Current preset: %s. "
+                    "This projector profile has no gamma points; if your menu does have them, select the matching "
+                    "layout in Settings → Projector." % (mean, way, sdr.get("gammaPreset") or "not entered")}
 
 
 def verdict(an, items, settings=None):

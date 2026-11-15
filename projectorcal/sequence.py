@@ -87,13 +87,23 @@ def patch_read_time(catalog, pid, mode):
 
 DESIGN_SLOW = 1.25      # margin: the meter may be 25 % slower than the model (another unit, darker white)
 
+# Speed variants of the auto-run video. "std" is tuned to the i1Display Pro / Plus family (verified); "slow" gives
+# every reading twice the time — for meters whose readings are slower (ColorMunki Display, i1Display Studio,
+# Spyder, i1Pro and other spectrometers, DTP94, Huey, ColorHug) or for an unknown meter.
+SPEEDS = {"std": 1.0, "slow": 2.0}
 
-def _dur(t_prev, t_cur, min_dur=5):
+
+def _dur(t_prev, t_cur, min_dur=5, factor=1.0):
     """A segment must fit the tail of a reading started on the previous picture (up to t_prev) plus n whole
     readings of its own: 3 on bright, 2 on dark (each dark reading is long and precise). +1 s margin."""
     n = 3 if t_cur < 4.0 else 2
-    need = DESIGN_SLOW * (t_prev + n * t_cur) + 1.0
-    return int(max(min_dur, min(45, -(-need // 1))))
+    need = DESIGN_SLOW * factor * (t_prev + n * t_cur) + 1.0
+    return int(max(min_dur, min(45 * factor, -(-need // 1))))
+
+
+def file_name(mode, speed="std"):
+    return "ProjectorCal_AUTO_%s_v%d%s.mp4" % ("SDR" if mode == "sdr" else "HDR10", VERSION,
+                                              "" if speed == "std" else "_" + speed)
 
 
 def _gray_order():
@@ -128,9 +138,12 @@ def _sweep_order(catalog):
     return order
 
 
-def build(catalog, mode="sdr"):
-    """Schedule: {"mode", "version", "segments": [{i, patchId, start, dur, role}], "anchor", "endAnchor",
-    "duration"}. role: pre | mark | patch | drift | end."""
+def build(catalog, mode="sdr", speed="std"):
+    """Schedule: {"mode", "version", "speed", "segments": [{i, patchId, start, dur, role}], "anchor", "endAnchor",
+    "duration"}. role: pre | mark | patch | drift | end. speed: "std" | "slow" (see SPEEDS)."""
+    if speed not in SPEEDS:
+        speed = "std"
+    f = SPEEDS[speed]
     segs = []
     t = 0
     prev_t = [1.0]
@@ -139,7 +152,9 @@ def build(catalog, mode="sdr"):
         nonlocal t
         tc = patch_read_time(catalog, pid, mode)
         if dur is None:
-            dur = _dur(prev_t[0], tc, min_dur)
+            dur = _dur(prev_t[0], tc, min_dur, f)
+        else:
+            dur = int(round(dur * f))           # service segments (mark, drift whites, finish) scale too
         segs.append({"i": len(segs), "patchId": pid, "start": t, "dur": dur, "role": role, "tr": round(tc, 2)})
         prev_t[0] = tc
         t += dur
@@ -175,8 +190,11 @@ def build(catalog, mode="sdr"):
     add(white, "end", END_WHITE)
     end_anchor = t
     add(pre, "end", END_TAIL)
-    return {"mode": mode, "version": VERSION, "segments": segs, "anchor": anchor, "endAnchor": end_anchor,
-            "duration": t, "file": "ProjectorCal_AUTO_%s_v%d.mp4" % ("SDR" if mode == "sdr" else "HDR10", VERSION)}
+    out = {"mode": mode, "version": VERSION, "segments": segs, "anchor": anchor, "endAnchor": end_anchor,
+           "duration": t, "file": file_name(mode, speed)}
+    if speed != "std":
+        out["speed"] = speed            # absent for "std": old sessions and the v3 videos stay byte-identical
+    return out
 
 
 def patches_measured(seq):

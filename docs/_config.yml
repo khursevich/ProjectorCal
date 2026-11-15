@@ -1,0 +1,11 @@
+title: ProjectorCal
+description: Free calibration for Vidda and Hisense laser projectors — white balance, 20-point gamma and CMS values from a colorimeter (ArgyllCMS, i1Display, Spyder, ColorMunki).
+theme: jekyll-theme-cayman
+lang: en
+plugins:
+  - jekyll-relative-links
+  - jekyll-seo-tag
+  - jekyll-sitemap
+relative_links:
+  enabled: true
+  collections: false

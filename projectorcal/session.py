@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import time
 import sys
 import uuid
 
@@ -21,6 +22,9 @@ DEFAULT_SETTINGS = {
     "refresh": "",                # "" (auto) | "n" | "r"
     "ccmx": "",
     "extraArgs": "",
+    "displayType": "",            # spotread -y (display type / installed .ccss of the instrument); "" = default
+    "meterProfile": "",           # profiles.METERS id; "" = suggested from the detected instrument
+    "autoSpeed": "",              # auto-run video: "" (from the meter profile) | "std" | "slow"
     "avg": 3,
     "stabilityPct": 0.7,
     "autoDefault": True,
@@ -48,7 +52,10 @@ def data_dir():
         return env
     if sys.platform == "darwin":
         return os.path.expanduser("~/Library/Application Support/ProjectorCal")
-    return os.path.expanduser("~/.local/share/ProjectorCal")
+    if os.name == "nt":
+        return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "ProjectorCal")
+    xdg = os.environ.get("XDG_DATA_HOME")
+    return os.path.join(xdg, "ProjectorCal") if xdg else os.path.expanduser("~/.local/share/ProjectorCal")
 
 
 def now_iso():
@@ -61,7 +68,14 @@ def atomic_write_json(path, obj):
         json.dump(obj, f, ensure_ascii=False, indent=1)
         f.flush()
         os.fsync(f.fileno())
-    os.replace(tmp, path)
+    for attempt in range(10):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:          # Windows: antivirus / indexer briefly holds the file
+            if attempt == 9:
+                raise
+            time.sleep(0.1)
 
 
 def gp_fresh():
@@ -86,10 +100,11 @@ def new_session(settings, name=None):
         "name": name or ("Calibration " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M")),
         "createdAt": created,
         "updatedAt": created,
-        "projectorProfile": {"name": "Vidda C3S", "screenSizeInches": None, "screenGain": None,
-                             "notes": ""},
+        "projectorProfile": {"model": "vidda-c3s", "name": "Vidda C3S", "gpCount": 20, "screenSizeInches": None,
+                             "screenGain": None, "notes": ""},
         "meter": {"flag": settings.get("flag", "-e"), "refresh": settings.get("refresh") or None,
-                  "ccmx": settings.get("ccmx") or None},
+                  "ccmx": settings.get("ccmx") or None, "displayType": settings.get("displayType") or None,
+                  "profile": settings.get("meterProfile") or None},
         "laserLevel": None,
         "whiteY": None,
         "whiteFixedAt": None,
@@ -159,6 +174,10 @@ def migrate(s):
     s.setdefault("events", [])
     s.setdefault("projectorProfile", {"name": "Vidda C3S", "screenSizeInches": None, "screenGain": None,
                                       "notes": ""})
+    pp = s["projectorProfile"]
+    if "model" not in pp:          # sessions before v1.7 were all recorded on the Vidda C3S layout
+        pp["model"] = "vidda-c3s" if "c3s" in str(pp.get("name") or "").lower() else "vidda-other"
+    pp.setdefault("gpCount", 20)
     for k in ("laserLevel", "whiteY", "whiteFixedAt"):
         s.setdefault(k, None)
     _migrate_language(s)

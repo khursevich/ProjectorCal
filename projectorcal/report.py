@@ -250,10 +250,15 @@ def tbl_settings(ps):
             "".join("<td>%s</td>" % v(hdr[k][c]) for c in "RGB"))
     out += "</table>"
     pts = sdr["gammaPoints"]
-    out += ('<p><b>Gamma:</b> preset %s · points (Control Point → Gain):</p><table><tr>%s</tr><tr>%s</tr></table>'
-            % (v(sdr["gammaPreset"]), "".join("<th>%s<br><span class='muted'>%d%%</span></th>" % (k, 5 * k)
-                                              for k in range(1, 21)),
-               "".join("<td>%s</td>" % v(pts[str(k)]) for k in range(1, 21))))
+    from . import analysis as A
+    n, step = A.GP_COUNT, A.GP_STEP          # the layout of the session's projector profile
+    if n:
+        out += ('<p><b>Gamma:</b> preset %s · points (Control Point → Gain):</p><table><tr>%s</tr><tr>%s</tr></table>'
+                % (v(sdr["gammaPreset"]), "".join("<th>%s<br><span class='muted'>%d%%</span></th>" % (k, step * k)
+                                                  for k in range(1, n + 1)),
+                   "".join("<td>%s</td>" % v(pts.get(str(k))) for k in range(1, n + 1))))
+    else:
+        out += '<p><b>Gamma:</b> preset %s (no gamma points on this projector)</p>' % v(sdr["gammaPreset"])
     out += '<table><tr><th class="l">CMS</th><th>Color tone</th><th>Saturation</th><th>Bright</th></tr>'
     for col in PS.CMS_COLORS:
         c = sdr["cms"][col]
@@ -337,7 +342,7 @@ def build(ctl):
     o.append('<div class="toolbar"><button onclick="window.print()">Print / save PDF</button>'
              '<span class="muted small">In the print dialog: “Save as PDF”, default margins.</span></div>')
     o.append('<h1>Calibration of %s</h1><p class="muted">%s · report of %s · ProjectorCal</p>' % (
-        e(pp.get("name") or "Vidda C3S"), e(title.replace("ProjectorCal ", "", 1)), now))
+        e(pp.get("name") or "projector"), e(title.replace("ProjectorCal ", "", 1)), now))
     o.append('<p class="small">Chain: source → HDMI → projector → %s. Meter: ArgyllCMS spotread %s%s. '
              'SDR target: D65, γ %s from the measured white, Rec.709.</p>' % (
                  e(pp.get("notes") or "screen"), e((s.get("meter") or {}).get("flag") or "-e"),

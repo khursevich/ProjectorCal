@@ -1,0 +1,491 @@
+{
+ "mode": "sdr",
+ "version": 3,
+ "segments": [
+  {
+   "i": 0,
+   "patchId": "SDR_11",
+   "start": 0,
+   "dur": 16,
+   "role": "pre",
+   "tr": 1.71
+  },
+  {
+   "i": 1,
+   "patchId": "SDR_01",
+   "start": 16,
+   "dur": 24,
+   "role": "mark",
+   "tr": 1.14
+  },
+  {
+   "i": 2,
+   "patchId": "SDR_11",
+   "start": 40,
+   "dur": 8,
+   "role": "mark",
+   "tr": 1.71
+  },
+  {
+   "i": 3,
+   "patchId": "SDR_01",
+   "start": 48,
+   "dur": 14,
+   "role": "patch",
+   "tr": 1.14
+  },
+  {
+   "i": 4,
+   "patchId": "SDR_11",
+   "start": 62,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.71
+  },
+  {
+   "i": 5,
+   "patchId": "SDR_02",
+   "start": 79,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.17
+  },
+  {
+   "i": 6,
+   "patchId": "SDR_12",
+   "start": 94,
+   "dur": 19,
+   "role": "patch",
+   "tr": 1.99
+  },
+  {
+   "i": 7,
+   "patchId": "SDR_03",
+   "start": 113,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.2
+  },
+  {
+   "i": 8,
+   "patchId": "SDR_13",
+   "start": 128,
+   "dur": 23,
+   "role": "patch",
+   "tr": 2.45
+  },
+  {
+   "i": 9,
+   "patchId": "SDR_04",
+   "start": 151,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.23
+  },
+  {
+   "i": 10,
+   "patchId": "SDR_14",
+   "start": 168,
+   "dur": 28,
+   "role": "patch",
+   "tr": 3.13
+  },
+  {
+   "i": 11,
+   "patchId": "SDR_05",
+   "start": 196,
+   "dur": 19,
+   "role": "patch",
+   "tr": 1.27
+  },
+  {
+   "i": 12,
+   "patchId": "SDR_15",
+   "start": 215,
+   "dur": 26,
+   "role": "patch",
+   "tr": 4.19
+  },
+  {
+   "i": 13,
+   "patchId": "SDR_06",
+   "start": 241,
+   "dur": 22,
+   "role": "patch",
+   "tr": 1.32
+  },
+  {
+   "i": 14,
+   "patchId": "SDR_16",
+   "start": 263,
+   "dur": 35,
+   "role": "patch",
+   "tr": 5.98
+  },
+  {
+   "i": 15,
+   "patchId": "SDR_07",
+   "start": 298,
+   "dur": 27,
+   "role": "patch",
+   "tr": 1.37
+  },
+  {
+   "i": 16,
+   "patchId": "SDR_17",
+   "start": 325,
+   "dur": 42,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 17,
+   "patchId": "SDR_08",
+   "start": 367,
+   "dur": 31,
+   "role": "patch",
+   "tr": 1.44
+  },
+  {
+   "i": 18,
+   "patchId": "SDR_18",
+   "start": 398,
+   "dur": 43,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 19,
+   "patchId": "SDR_09",
+   "start": 441,
+   "dur": 32,
+   "role": "patch",
+   "tr": 1.51
+  },
+  {
+   "i": 20,
+   "patchId": "SDR_19",
+   "start": 473,
+   "dur": 43,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 21,
+   "patchId": "SDR_10",
+   "start": 516,
+   "dur": 32,
+   "role": "patch",
+   "tr": 1.6
+  },
+  {
+   "i": 22,
+   "patchId": "SDR_20",
+   "start": 548,
+   "dur": 55,
+   "role": "patch",
+   "tr": 10.0
+  },
+  {
+   "i": 23,
+   "patchId": "SDR_21",
+   "start": 603,
+   "dur": 76,
+   "role": "patch",
+   "tr": 10.0
+  },
+  {
+   "i": 24,
+   "patchId": "SDR_01",
+   "start": 679,
+   "dur": 32,
+   "role": "drift",
+   "tr": 1.14
+  },
+  {
+   "i": 25,
+   "patchId": "SDR_25",
+   "start": 711,
+   "dur": 13,
+   "role": "patch",
+   "tr": 1.2
+  },
+  {
+   "i": 26,
+   "patchId": "SDR_27",
+   "start": 724,
+   "dur": 16,
+   "role": "patch",
+   "tr": 1.52
+  },
+  {
+   "i": 27,
+   "patchId": "SDR_26",
+   "start": 740,
+   "dur": 43,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 28,
+   "patchId": "SDR_24",
+   "start": 783,
+   "dur": 45,
+   "role": "patch",
+   "tr": 3.25
+  },
+  {
+   "i": 29,
+   "patchId": "SDR_23",
+   "start": 828,
+   "dur": 31,
+   "role": "patch",
+   "tr": 2.92
+  },
+  {
+   "i": 30,
+   "patchId": "SDR_22",
+   "start": 859,
+   "dur": 34,
+   "role": "patch",
+   "tr": 4.99
+  },
+  {
+   "i": 31,
+   "patchId": "SDR_01",
+   "start": 893,
+   "dur": 32,
+   "role": "drift",
+   "tr": 1.14
+  },
+  {
+   "i": 32,
+   "patchId": "SDR_40",
+   "start": 925,
+   "dur": 15,
+   "role": "patch",
+   "tr": 1.36
+  },
+  {
+   "i": 33,
+   "patchId": "SDR_48",
+   "start": 940,
+   "dur": 16,
+   "role": "patch",
+   "tr": 1.47
+  },
+  {
+   "i": 34,
+   "patchId": "SDR_44",
+   "start": 956,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.55
+  },
+  {
+   "i": 35,
+   "patchId": "SDR_36",
+   "start": 973,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.56
+  },
+  {
+   "i": 36,
+   "patchId": "SDR_32",
+   "start": 990,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.56
+  },
+  {
+   "i": 37,
+   "patchId": "SDR_28",
+   "start": 1007,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.57
+  },
+  {
+   "i": 38,
+   "patchId": "SDR_41",
+   "start": 1024,
+   "dur": 16,
+   "role": "patch",
+   "tr": 1.38
+  },
+  {
+   "i": 39,
+   "patchId": "SDR_49",
+   "start": 1040,
+   "dur": 17,
+   "role": "patch",
+   "tr": 1.66
+  },
+  {
+   "i": 40,
+   "patchId": "SDR_45",
+   "start": 1057,
+   "dur": 23,
+   "role": "patch",
+   "tr": 2.25
+  },
+  {
+   "i": 41,
+   "patchId": "SDR_37",
+   "start": 1080,
+   "dur": 22,
+   "role": "patch",
+   "tr": 2.04
+  },
+  {
+   "i": 42,
+   "patchId": "SDR_33",
+   "start": 1102,
+   "dur": 22,
+   "role": "patch",
+   "tr": 2.02
+  },
+  {
+   "i": 43,
+   "patchId": "SDR_29",
+   "start": 1124,
+   "dur": 22,
+   "role": "patch",
+   "tr": 2.09
+  },
+  {
+   "i": 44,
+   "patchId": "SDR_42",
+   "start": 1146,
+   "dur": 20,
+   "role": "patch",
+   "tr": 1.74
+  },
+  {
+   "i": 45,
+   "patchId": "SDR_50",
+   "start": 1166,
+   "dur": 20,
+   "role": "patch",
+   "tr": 1.91
+  },
+  {
+   "i": 46,
+   "patchId": "SDR_46",
+   "start": 1186,
+   "dur": 38,
+   "role": "patch",
+   "tr": 6.34
+  },
+  {
+   "i": 47,
+   "patchId": "SDR_38",
+   "start": 1224,
+   "dur": 41,
+   "role": "patch",
+   "tr": 3.13
+  },
+  {
+   "i": 48,
+   "patchId": "SDR_34",
+   "start": 1265,
+   "dur": 32,
+   "role": "patch",
+   "tr": 2.97
+  },
+  {
+   "i": 49,
+   "patchId": "SDR_30",
+   "start": 1297,
+   "dur": 36,
+   "role": "patch",
+   "tr": 3.57
+  },
+  {
+   "i": 50,
+   "patchId": "SDR_43",
+   "start": 1333,
+   "dur": 24,
+   "role": "patch",
+   "tr": 1.87
+  },
+  {
+   "i": 51,
+   "patchId": "SDR_51",
+   "start": 1357,
+   "dur": 21,
+   "role": "patch",
+   "tr": 2.04
+  },
+  {
+   "i": 52,
+   "patchId": "SDR_47",
+   "start": 1378,
+   "dur": 44,
+   "role": "patch",
+   "tr": 7.5
+  },
+  {
+   "i": 53,
+   "patchId": "SDR_39",
+   "start": 1422,
+   "dur": 42,
+   "role": "patch",
+   "tr": 4.25
+  },
+  {
+   "i": 54,
+   "patchId": "SDR_35",
+   "start": 1464,
+   "dur": 41,
+   "role": "patch",
+   "tr": 3.8
+  },
+  {
+   "i": 55,
+   "patchId": "SDR_31",
+   "start": 1505,
+   "dur": 44,
+   "role": "patch",
+   "tr": 6.53
+  },
+  {
+   "i": 56,
+   "patchId": "SDR_01",
+   "start": 1549,
+   "dur": 32,
+   "role": "drift",
+   "tr": 1.14
+  },
+  {
+   "i": 57,
+   "patchId": "SDR_11",
+   "start": 1581,
+   "dur": 10,
+   "role": "end",
+   "tr": 1.71
+  },
+  {
+   "i": 58,
+   "patchId": "SDR_01",
+   "start": 1591,
+   "dur": 12,
+   "role": "end",
+   "tr": 1.14
+  },
+  {
+   "i": 59,
+   "patchId": "SDR_11",
+   "start": 1603,
+   "dur": 10,
+   "role": "end",
+   "tr": 1.71
+  }
+ ],
+ "anchor": 40,
+ "endAnchor": 1603,
+ "duration": 1613,
+ "file": "ProjectorCal_AUTO_SDR_v3_slow.mp4",
+ "speed": "slow"
+}

@@ -260,9 +260,22 @@ def cp1_steps(rows):
 # Verified 2026-11-03: with the values entered from the menu (1:−20 … 12:−3), the "20 points at 5 %" model explained
 # 98 % of the luminance changes at 20–90 % vs a run with all points = 0; the "10 at 10 %" model — 75 %.
 # Point 20 = white 100 %: it is left alone, white is the reference for all targets.
+# Other projectors: the layout comes from the session's projector profile (profiles.py) — 20 points × 5 %,
+# 10 points × 10 % or none; set_gp_layout() switches it (one session is active at a time).
 GP_COUNT = 20
 GP_STEP = 5                       # % stimulus between neighboring points
 GP_POINTS = tuple(range(1, GP_COUNT))
+
+
+def set_gp_layout(count):
+    """count: 20 (k → 5·k %), 10 (k → 10·k %) or 0 (the projector has no luminance gamma points)."""
+    global GP_COUNT, GP_STEP, GP_POINTS
+    count = int(count or 0)
+    if count not in (20, 10, 0):
+        count = 20
+    GP_COUNT = count
+    GP_STEP = 100 // count if count else 5
+    GP_POINTS = tuple(range(1, count)) if count else ()
 
 
 def gp_stim(k):
@@ -271,6 +284,8 @@ def gp_stim(k):
 
 def gp_point(stim):
     """Step (5…95 %) → point number, or None."""
+    if not GP_COUNT:
+        return None
     return stim // GP_STEP if stim % GP_STEP == 0 and 0 < stim < 100 else None
 
 
@@ -283,8 +298,8 @@ def gp_tol(stim):
 GP_PER_STEP = 2.3
 
 
-def _tent(stim, node, width=float(GP_STEP)):
-    return max(0.0, 1.0 - abs(stim - node) / width)
+def _tent(stim, node, width=None):
+    return max(0.0, 1.0 - abs(stim - node) / float(width or GP_STEP))
 
 
 def _solve(Mx, v):
@@ -303,19 +318,22 @@ def _solve(Mx, v):
     return [M[i][n] / M[i][i] if abs(M[i][i]) > 1e-12 else 0.0 for i in range(n)]
 
 
-def gp_plan(an, values, per_step=GP_PER_STEP, points=GP_POINTS):
+def gp_plan(an, values, per_step=GP_PER_STEP, points=None):
     """Corrections for all points at once from a full pass.
 
-    ΔlnY(s) = g · Σ Δk · tent(s, 5k); g = ln(1 + per_step %). Least squares over steps 10–95 % (5 % — with
+    ΔlnY(s) = g · Σ Δk · tent(s, step·k); g = ln(1 + per_step %). Least squares over steps 10–95 % (5 % — with
     a small weight: meter noise and black dominate there) with light regularization and smoothing (neighboring points
     must not zigzag). A point without a nearby reading is left alone. Returns per point: now, delta, new, dev at the node."""
+    points = GP_POINTS if points is None else points
+    if not points:
+        return []
     g = math.log(1 + per_step / 100.0)
     rows = {r["stim"]: r for r in an["rows"] if r.get("measured") and r.get("dev") is not None}
     # a step whose target is below twice the black level is defined by black, not by gamma: "pulling" it with a point
     # would crush near-black into black. Without a black reading, 5 % is not used at all.
     Yb = (an.get("summary") or {}).get("blackY")
     obs = [(st, -math.log(1 + rows[st]["dev"] / 100.0), 0.3 if st < 10 else 1.0)
-           for st in range(GP_STEP, 100, GP_STEP) if st in rows and _gp_usable(rows[st], st, Yb)]
+           for st in range(5, 100, 5) if st in rows and _gp_usable(rows[st], st, Yb)]
     if len(obs) < 5:
         return []
     ks = list(points)
@@ -366,7 +384,7 @@ def gp_learn(prev_an, cur_an, applied):
     if 100 not in p or 100 not in c or sum(abs(v) for v in applied.values()) < 3:
         return None
     xs, ys = [], []
-    for st in range(10, 100, GP_STEP):
+    for st in range(10, 100, 5):
         if st in p and st in c and p[st] > 0:
             x = sum(int(v) * _tent(st, gp_stim(k)) for k, v in applied.items())
             if x:
@@ -400,8 +418,9 @@ def gp_probe(prev_an, cur_an, delta):
             "effect": {k: round(v, 1) for k, v in eff.items()}}
 
 
-def gp_queue(an, points=GP_POINTS):
+def gp_queue(an, points=None):
     """Points to adjust (bottom-up) according to a full pass (10–95 %)."""
+    points = GP_POINTS if points is None else points
     rows = {r["stim"]: r for r in an["rows"] if r.get("measured") and r.get("dev") is not None}
     out = []
     for k in points:

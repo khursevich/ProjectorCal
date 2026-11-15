@@ -1,8 +1,9 @@
-"""Colorimeter link via ArgyllCMS spotread (an external process on a pty).
+"""Colorimeter link via ArgyllCMS spotread (an external process on a pty / Windows pseudo console).
 
 Rules (see docs/HOW_IT_WORKS.md, "Meter link"):
 * spotread reads keys from the terminal, so it runs on a pty, and the pty becomes its
   controlling terminal: if our program dies, the kernel sends spotread SIGHUP.
+  On Windows it runs on a ConPTY pseudo console in a kill-on-close job object (conpty.py).
 * The key (space) is sent ONLY after the spotread prompt. A key press during a reading
   may be taken by Argyll as a cancel.
 * All raw output goes to the log (log callback).
@@ -19,8 +20,14 @@ import subprocess
 import sys
 import time
 
+IS_WIN = os.name == "nt"
+EXE = "spotread.exe" if IS_WIN else "spotread"
+
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
-RESULT_RE = re.compile(r"Result is XYZ:\s*(" + NUM + r")\s*,?\s*(" + NUM + r")\s*,?\s*(" + NUM + r")")
+_SEP = r"(?:\s*,\s*|\s+)"
+# the third number must be followed by something (a separator or the end of the line): a line still arriving in
+# pieces must not be parsed half-way ("47.5235" is not "47.52, 3, 5")
+RESULT_RE = re.compile(r"Result is XYZ:\s*(" + NUM + r")" + _SEP + r"(" + NUM + r")" + _SEP + r"(" + NUM + r")(?=[\s,])")
 PROMPT_RE = re.compile(r"(?i)(take a reading|any key to measure|measure it|hit esc or q to exit)")
 CALIB_RE = re.compile(r"(?i)(any key to continue|calibration position)")
 FAIL_RE = re.compile(r"(?i)(spot read failed|read failed|measurement failed|failed due to|"
@@ -38,6 +45,19 @@ _TRAMPOLINE = (
 )
 
 
+def platform_name():
+    return "mac" if sys.platform == "darwin" else "windows" if IS_WIN else "linux"
+
+
+def install_hint():
+    """How to install ArgyllCMS on this system (one line)."""
+    return {"mac": "Install ArgyllCMS: brew install argyll-cms",
+            "windows": "Install ArgyllCMS: download the Windows 64-bit zip from argyllcms.com and unzip it to C:\\ "
+                       "(e.g. C:\\Argyll_V3.3.0)",
+            "linux": "Install ArgyllCMS: sudo apt install argyll (Debian/Ubuntu), sudo dnf install argyllcms "
+                     "(Fedora) or sudo pacman -S argyllcms (Arch)"}[platform_name()]
+
+
 class MeterError(Exception):
     """Meter error. message — for the user, detail — raw text."""
 
@@ -48,16 +68,34 @@ class MeterError(Exception):
         self.kind = kind
 
 
+def _search_patterns():
+    """Where ArgyllCMS usually lives (newest version first), including the copy DisplayCAL downloads."""
+    if IS_WIN:
+        env = os.environ
+        roots = [env.get("ProgramFiles", r"C:\Program Files"), env.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+                 "C:\\", os.path.expanduser("~"), os.path.join(os.path.expanduser("~"), "Downloads")]
+        if env.get("LOCALAPPDATA"):
+            roots.append(os.path.join(env["LOCALAPPDATA"], "Programs"))
+        if env.get("APPDATA"):
+            roots.append(os.path.join(env["APPDATA"], "DisplayCAL", "dl"))
+        return [os.path.join(r, "Argyll*", "bin", EXE) for r in roots if r] + \
+               [os.path.join(r, "Argyll*", "Argyll*", "bin", EXE) for r in roots if r]
+    return ["/opt/homebrew/bin/spotread", "/usr/local/bin/spotread", "~/Argyll*/bin/spotread",
+            "/Applications/Argyll*/bin/spotread", "/usr/bin/spotread",
+            "~/Library/Application Support/DisplayCAL/dl/Argyll*/bin/spotread",
+            "~/.local/share/DisplayCAL/dl/Argyll*/bin/spotread"]
+
+
 def find_spotread(custom=None):
     cands = []
     if custom:
-        cands.append(os.path.expanduser(custom))
-    cands += ["/opt/homebrew/bin/spotread", "/usr/local/bin/spotread"]
-    for pat in ("~/Argyll*/bin/spotread", "/Applications/Argyll*/bin/spotread", "/usr/bin/spotread"):
-        cands += sorted(glob.glob(os.path.expanduser(pat)), reverse=True)
+        c = os.path.expanduser(custom.strip().strip('"'))
+        cands += [c, os.path.join(c, EXE), os.path.join(c, "bin", EXE)]     # the file or its folder
     for d in os.environ.get("PATH", "").split(os.pathsep):
         if d:
-            cands.append(os.path.join(d, "spotread"))
+            cands.append(os.path.join(d.strip('"'), EXE))
+    for pat in _search_patterns():
+        cands += sorted(glob.glob(os.path.expanduser(pat)), reverse=True)
     for c in cands:
         if os.path.isfile(c) and os.access(c, os.X_OK):
             return c
@@ -120,11 +158,14 @@ class ArgyllMeter:
         self.read_timeout = read_timeout
         self.proc = None
         self.fd = None
+        self.con = None                      # Windows: ConPtyProcess (then proc is the same object)
         self.buf = ""
         self.ready = False
 
     # ------------------------------------------------------------- process
     def _spawn(self):
+        if IS_WIN:
+            return self._spawn_win()
         import pty
         import termios
         master, slave = pty.openpty()
@@ -147,8 +188,29 @@ class ArgyllMeter:
         self.fd = master
         self.buf = ""
 
+    def _spawn_win(self):
+        from .conpty import ConPtyProcess
+        self.log("$ " + " ".join([self.exe] + self.args) + "\n")
+        from .conpty import VTCleaner
+        self._vt = VTCleaner()
+        try:
+            self.con = self.proc = ConPtyProcess([self.exe] + self.args)
+        except OSError as e:
+            raise MeterError("Could not start spotread: %s" % e, kind="spawn")
+        self.fd = None
+        self.buf = ""
+
     def _read_chunk(self, timeout):
         """Reads available output. Returns False if the process closed the terminal."""
+        if self.con is not None:
+            data = self.con.read(timeout)
+            if data is None:
+                return False
+            if data:
+                text = self._vt.feed(data.decode("utf-8", "replace")).replace("\r", "")
+                self.buf += text
+                self.log(text)
+            return True
         if self.fd is None:
             return False
         try:
@@ -177,6 +239,9 @@ class ArgyllMeter:
             for i, pat in enumerate(patterns):
                 m = pat.search(self.buf)
                 if m:
+                    if self.con is not None:
+                        self._settle()
+                        m = pat.search(self.buf) or m      # match again on the complete text
                     return i, m
             left = deadline - time.monotonic()
             if left <= 0:
@@ -189,8 +254,22 @@ class ArgyllMeter:
                         return i, m
                 return "eof", None
 
+    def _settle(self, quiet=0.15, limit=2.0):
+        """Windows: the pseudo console delivers text in arbitrary pieces, so a prompt may match before its last
+        bytes arrive. Read until the output has been quiet for a moment (the leftover must not be taken for the
+        next prompt). On a pty spotread writes each prompt at once — nothing to do."""
+        if self.con is None:
+            return
+        end = time.monotonic() + limit
+        while time.monotonic() < end:
+            n = len(self.buf)
+            if not self._read_chunk(quiet) or len(self.buf) == n:
+                return
+
     def _send(self, s):
         try:
+            if self.con is not None:
+                return self.con.write(s.encode())
             os.write(self.fd, s.encode())
         except OSError as e:
             raise MeterError("Lost connection to spotread.", str(e), kind="eof")
@@ -224,7 +303,7 @@ class ArgyllMeter:
 
     def read(self):
         """One reading. Returns (X, Y, Z)."""
-        if not self.ready or self.fd is None:
+        if not self.ready or (self.fd is None and self.con is None):
             raise MeterError("Meter is not ready.", kind="notready")
         self.ready = False
         self.buf = ""
@@ -266,6 +345,16 @@ class ArgyllMeter:
         return self.proc is not None and self.proc.poll() is None
 
     def close(self):
+        if self.con is not None:
+            con, self.con, self.proc, self.ready = self.con, None, None, False
+            if con.poll() is None:
+                try:
+                    con.write(b"q")
+                    con.wait(timeout=2.0)
+                except (OSError, subprocess.TimeoutExpired):
+                    pass
+            con.close()
+            return
         proc, fd = self.proc, self.fd
         self.proc, self.ready = None, False
         if proc is not None:
@@ -347,6 +436,9 @@ def build_args(settings):
     args = [settings.get("flag") or "-e"]
     if settings.get("refresh") in ("n", "r"):
         args += ["-Y", settings["refresh"]]
+    dt = str(settings.get("displayType") or "").strip()
+    if dt and dt.isalnum() and len(dt) <= 2:
+        args += ["-y", dt]
     if settings.get("ccmx"):
         args += ["-X", os.path.expanduser(settings["ccmx"])]
     extra = (settings.get("extraArgs") or "").split()

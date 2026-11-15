@@ -1,2 +1,3 @@
-"""ProjectorCal — step-by-step calibration of the Vidda C3S projector with a colorimeter via ArgyllCMS spotread."""
-__version__ = "1.6.0"
+"""ProjectorCal — measurement-based calibration of Vidda / Hisense laser projectors (and other displays with a
+Gain/Offset white balance and CMS) with any ArgyllCMS-supported colorimeter or spectrometer."""
+__version__ = "1.7.0"

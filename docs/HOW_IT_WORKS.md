@@ -16,8 +16,15 @@
 * A key press is sent **only after** the `spotread` prompt (a key during a reading may be taken as cancel).
 * Result line: `Result is XYZ: X Y Z`. A calibration request (`any key to continue`) opens a dialog.
   EOF/timeouts produce a clear message, automatic retry after 10 s and a *Retry* button.
-* Optional: `-Y n|r` (integration mode), `-X file.ccmx|.ccss` (spectral correction), extra arguments.
+* Optional: `-Y n|r` (integration mode), `-y X` (display type / installed correction of the instrument),
+  `-X file.ccmx|.ccss` (spectral correction), extra arguments.
 * All raw output goes to `sessions/<id>.spotread.log` and the *Meter log* window.
+* **Windows:** ArgyllCMS reads keys from the console, not stdin, so `spotread.exe` runs on a ConPTY pseudo console
+  (Windows 10 1809+) created with `ctypes`, inside a job object with *kill on close* (no orphan if ProjectorCal
+  dies). ConPTY output is a rendered screen: VT escape sequences are stripped (also when split between two reads),
+  and after a prompt matches, the link waits until the output is quiet before acting, because ConPTY may deliver a
+  prompt in pieces. The result regex requires a separator after the third number on every system, so a line that
+  is still arriving is never parsed half-way.
 
 ## Formulas
 
@@ -86,6 +93,16 @@ video generator and the analyzer.
 Verified on randomized simulations (Plex stalls, menus in the meter, jitter, a meter 30 % slower than the model):
 ≈ 6000 patches per test batch, no silent errors.
 
+### Slow meters
+
+The standard video is timed for the i1Display Pro / Plus family. For slower meters (ColorMunki Display,
+i1Display Studio, Spyder, i1Pro and other spectrometers, DTP94, Huey, ColorHug) there is a second variant,
+`*_v3_slow.mp4`: every segment — including the marks and control whites — is built for readings twice as long
+(SDR ≈ 27 min, HDR10 ≈ 13 min). The patch order is the same. The analyzer reads the variant from the schedule and
+widens its timing tolerances by the same factor (mark length, outlier window, "single reading" flag). Simulation with
+a meter 1.6–2.4× slower than the i1Display model: ≈ 6800 patches, no silent errors. Which video to play follows from
+*Settings → Meter model* (or can be forced there).
+
 ### Warm-up / drift correction
 
 White is measured several times per run (mark, the 100 % patch, control whites, finish). If it changed by more than
@@ -104,7 +121,8 @@ learned. The first trial of an unlearned Gain is limited to 2 steps.
 
 ### Gamma points
 
-ΔlnY(s) = g · Σ Δk · tent(s, 5k), g = ln(1 + per-step %). Least squares over the 10–95 % steps with light
+ΔlnY(s) = g · Σ Δk · tent(s, step·k), g = ln(1 + per-step %), step = 5 % for a 20-point menu or 10 % for a
+10-point menu (the layout is part of the projector profile, see below). Least squares over the 10–95 % steps with light
 regularization and smoothing; steps whose target is below twice the black level are excluded (that would crush
 near-black into black); a step already within the good tolerance is not touched for ±1. If the plan also changes
 Offset, the gray scale is first predicted after that Offset change (red/blue share in Y) so both are consistent.
@@ -124,11 +142,28 @@ Consecutive runs of one mode are compared; the settings diff is grouped (Gain, O
 converted to "per step" (Gain: R/G at 100 %; Offset: k from R/G·s at 20–50 %; gamma: fit of the tent model; CMS: dY/dC
 of the 100 % patch). The median of all learned values replaces the defaults.
 
+### Projectors without gamma points
+
+If the profile says the menu has no luminance gamma points, the plan judges the mean deviation of 20–80 % gray and
+suggests a darker or brighter gamma preset instead; white balance and CMS are planned as usual.
+
+## Projector and meter profiles (`projectorcal/profiles.py`)
+
+A **projector profile** only fixes what cannot be learned: the number of gamma Control Points and which stimulus
+each one controls (20 × 5 %, 10 × 10 % or none). All step sizes start from the values measured on the Vidda C3S
+and are re-learned from your own runs, so an unverified model costs one or two extra runs, not wrong advice. If the
+layout is uncertain, *Gamma by points → point probe* changes one point and shows where its effect peaks.
+
+A **meter profile** decides which auto-run video to play and shows setup notes. The model is suggested from the
+instrument name in `spotread -?` (the whole i1Display family reports one USB name, so the user confirms Pro/Plus vs
+ColorMunki Display). The display-type list (`-y`) of the connected meter, including installed `.ccss` corrections,
+is read from the same output and offered in Settings.
+
 ## The manual wizard
 
 Preparation (checklist, meter check, room light) → Black level/contrast (PLUGE, clipping) → Laser level (fix the
 white) → Gray scale circles (100/80/60/40/20/10 with one "next action": Gain → Offset → gamma → mids) → Gamma by
-points (base pass → corrections for all 20 points → check pass, with a point probe) → Colors → SDR verification →
+points (base pass → corrections for all points at once → check pass, with a point probe) → Colors → SDR verification →
 Visual check → HDR10 (PQ gray, tone-mapping report, reference white 203 nits at 50–70 % of the peak) → Dolby Vision
 checklist → Summary and report.
 

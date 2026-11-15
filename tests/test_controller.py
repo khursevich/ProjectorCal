@@ -270,6 +270,29 @@ class MockFlowTests(Base):
         h = c.session_view()["analysis"]["full"]["latest"]["hdr"]["analysis"]["hdr"]["summary"]
         self.assertIn("refWhite", h)
 
+    def test_slow_meter_profile_and_10_point_layout(self):
+        """Meter profile → slow auto-run video (the mock plays it, the analyzer recovers all patches);
+        projector profile with 10 gamma points → points at 10 % steps in the plan."""
+        os.environ["PROJECTORCAL_MOCK_SPEED"] = "20"
+        c = self.start()
+        self.assertTrue(wait(lambda: c.meter_state == "ready"))
+        c.update_settings({"meterProfile": "spyder"})
+        self.assertEqual(c.auto_speed(), "slow")
+        c.set_fields({"projectorProfile": {"model": "hisense-px", "gpCount": 10}})
+        from projectorcal import analysis as A
+        self.assertEqual((A.GP_COUNT, A.GP_STEP), (10, 10))
+        c.goto("full")
+        c.full_start("hdr")
+        self.assertTrue(wait(lambda: len(c.session["runs"]) == 1, timeout=120), c.state().get("auto"))
+        run = c.session["runs"][0]
+        self.assertEqual(run["seq"]["speed"], "slow")
+        self.assertTrue(run["file"].endswith("_slow.mp4"))
+        self.assertEqual(run["used"], 21)
+        c.update_settings({"autoSpeed": "std"})
+        self.assertEqual(c.auto_speed(), "std")
+        c.set_fields({"projectorProfile": {"model": "vidda-c3s", "gpCount": 20}})
+        self.assertEqual((A.GP_COUNT, A.GP_STEP), (20, 5))
+
     def test_ambient(self):
         c = self.start()
         self.assertTrue(wait(lambda: c.meter_state == "ready"))
@@ -349,7 +372,8 @@ class ArgyllControllerTests(Base):
         c = self.start()
         if c.meter_exe is None or "spotread" not in str(c.meter_exe):
             self.assertTrue(wait(lambda: c.meter_state == "error"))
-            self.assertIn("brew install argyll-cms", c.state()["meter"]["error"]["message"])
+            from projectorcal.meter import install_hint
+        self.assertIn(install_hint(), c.state()["meter"]["error"]["message"])   # the hint for this system
 
 
 if __name__ == "__main__":

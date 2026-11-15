@@ -413,17 +413,34 @@ function notes(stepId) {
 }
 
 // ------------------------------------------------------------ 0. Preparation
+function installHelp() {
+  const pf = S.sv.platform || 'mac';
+  if (pf === 'windows') return `<ol class="small"><li>Download <b>ArgyllCMS for MS Windows 64 bit</b> from <span class="mono">argyllcms.com</span> (Downloads).</li>
+      <li>Unzip it to <span class="mono">C:\\</span> — you get e.g. <span class="mono">C:\\Argyll_V3.3.0\\bin\\spotread.exe</span>. ProjectorCal finds it there (or set the path in Settings).</li>
+      <li>i1Display / ColorMunki Display / Calibrite need no driver. Spyder, i1Pro and some older meters need the ArgyllCMS USB driver: see “Installing on MS Windows” on argyllcms.com.</li></ol>
+      <p class="small muted">After installing press “Check again”.</p>`;
+  if (pf === 'linux') return `${codeBox('sudo apt install argyll')}<p class="small muted">Fedora: <span class="mono">sudo dnf install argyllcms</span> · Arch: <span class="mono">sudo pacman -S argyllcms</span>. Re-plug the meter afterwards (USB access rules), then press “Check again”.</p>`;
+  return `${codeBox('brew install argyll-cms')}<p class="small muted">In Terminal. No Homebrew? Install it first from <span class="mono">brew.sh</span>. After installing press “Check again”.</p>`;
+}
+function meterHint(ck) {
+  const PR = S.sv.profiles || { meters: [] }, st = S.sv.settings;
+  const cur = PR.meters.find(m => m.id === st.meterProfile);
+  if (cur) return `<p class="small">Meter model: <b>${esc(cur.name)}</b> · auto-run video: <b>${S.sv.autoSpeed === 'slow' ? 'slow' : 'standard'}</b>. <span class="muted">${esc(cur.note)}</span> <span class="muted">(Settings → Meter)</span></p>`;
+  const sug = PR.meters.find(m => m.id === ck.suggested);
+  if (!sug) return '<p class="ok small">Select your meter model in Settings → Meter: it decides which auto-run video to play.</p>';
+  const alt = ck.ambiguous ? PR.meters.find(m => m.id === 'i1d3-slow') : null;
+  return `<p class="ok small">Which meter is it? ${alt ? 'The i1Display family reports one USB name for all models. ' : ''}
+    <button class="btn" data-act="useMeter" data-arg="${sug.id}">${esc(sug.name)}</button>${alt ? ` <button class="btn" data-act="useMeter" data-arg="${alt.id}">${esc(alt.name)}</button>` : ''}</p>`;
+}
 function viewPrep() {
   const ck = S.ui.check, mock = S.sv.settings.meterMode === 'mock';
   let chk;
   if (mock) chk = '<p><b>Meter simulation</b> is on (Settings → Meter). For a real calibration switch to “ArgyllCMS spotread”.</p>';
   else if (S.ui.checking) chk = '<p class="muted">Checking spotread and the meter… (up to 20 seconds)</p>';
   else if (!ck) chk = '';
-  else if (!ck.found) chk = `<p class="bad"><b>spotread not found.</b> Install ArgyllCMS in Terminal:</p>
-      ${codeBox('brew install argyll-cms')}
-      <p class="small muted">No Homebrew? Install it first from <span class="mono">brew.sh</span>. After installing press “Check again”.</p>`;
+  else if (!ck.found) chk = `<p class="bad"><b>spotread not found.</b> Install ArgyllCMS (free):</p>${installHelp()}`;
   else chk = `<p><span class="good">✓ spotread found</span> <span class="mono small muted">${esc(ck.exe)}</span>${ck.version ? ` · ArgyllCMS ${esc(ck.version)}` : ''}</p>
-      ${ck.instruments.length ? `<p><span class="good">✓ Meter detected:</span> ${ck.instruments.map(esc).join('<br>')}</p>` :
+      ${ck.instruments.length ? `<p><span class="good">✓ Meter detected:</span> ${ck.instruments.map(esc).join('<br>')}</p>${meterHint(ck)}` :
       `<p class="ok">No meter in the spotread list. Plug the meter directly into USB (no hub) and press “Check again”. For a Calibrite Display Plus HL: if that does not help, run Calibrite PROFILER once and close it.</p>`}
       <details><summary class="small">spotread -? output</summary><div class="pre">${esc(ck.raw)}</div></details>`;
   const ex = S.ui.exportResult;
@@ -601,12 +618,20 @@ function psForm() {
         ${cols.map(c => `<tr><td class="l">${lab[c]}</td>${['tone', 'sat', 'bright'].map(f => `<td><input type="number" class="psv" data-ps="sdr.cms.${c}.${f}" value="${esc(psValue(`sdr.cms.${c}.${f}`))}" style="width:64px"></td>`).join('')}</tr>`).join('')}</table></div>`;
     }
     if (title.startsWith('Gamma points')) {
-      return `<h3>${title}</h3><div class="tablewrap"><table class="t"><tr>${fs.map(f => `<th>${f[0].split('.').pop()}<br><span class="muted small">${+f[0].split('.').pop() * 5}%</span></th>`).join('')}</tr>
-        <tr>${fs.map(f => `<td><input type="number" class="psv" data-ps="${f[0]}" value="${esc(psValue(f[0]))}" style="width:46px;padding:3px"></td>`).join('')}</tr></table></div>
-        <p class="small muted">Point k = step k·5%: 1 → 5%, 2 → 10%, … 10 → 50%, … 20 → 100% (verified on a Vidda C3S). Minus — darker. Leave point 20 (white) alone.</p>`;
+      const L = gpLayout();
+      if (!L.n) return `<h3>${title}</h3><p class="small muted">The projector profile has no luminance gamma points (Settings → Projector → Gamma points layout). The program corrects gamma with the preset, white balance and CMS.</p>`;
+      const fl = fs.filter(f => +f[0].split('.').pop() <= L.n);
+      return `<h3>${title}</h3><div class="tablewrap"><table class="t"><tr>${fl.map(f => `<th>${f[0].split('.').pop()}<br><span class="muted small">${+f[0].split('.').pop() * L.step}%</span></th>`).join('')}</tr>
+        <tr>${fl.map(f => `<td><input type="number" class="psv" data-ps="${f[0]}" value="${esc(psValue(f[0]))}" style="width:46px;padding:3px"></td>`).join('')}</tr></table></div>
+        <p class="small muted">Point k = step k·${L.step}%: 1 → ${L.step}%, 2 → ${2 * L.step}%, … ${L.n} → 100%${L.n === 20 ? ' (verified on a Vidda C3S)' : ''}. Minus — darker. Leave point ${L.n} (white) alone.</p>`;
     }
     return `<h3>${title}</h3><div class="menuvals">${fs.map(f => `<label><span>${esc(f[1])}</span><input type="${f[3] === 'int' ? 'number' : 'text'}" class="psv" data-ps="${f[0]}" value="${esc(psValue(f[0]))}"></label>`).join('')}</div>`;
   }).join('');
+}
+function gpLayout() {
+  const pp = sess().projectorProfile || {};
+  const n = pp.gpCount === 0 || pp.gpCount === 10 ? pp.gpCount : 20;
+  return { n, step: n ? 100 / n : 5 };
 }
 function viewFull() {
   const F = an('full') || { runs: [], latest: {}, knowledge: [], sens: [], sequences: {} };
@@ -619,7 +644,7 @@ function viewFull() {
     const p = au.patchId ? P(au.patchId) : null;
     runBox = au.state === 'arming' ? `<div class="now warn"><div class="lbl">Full check ${au.mode.toUpperCase()} · waiting for the start mark (${au.waited} s)</div>
         <div class="what" style="font-size:24px">Play <span class="pid">${esc(au.file)}</span> (Plex or USB)</div>
-        <div style="font-size:16px">You can do it now. The file starts with 8 s of gray, 12 s of white and gray again — the program syncs on them. Do not touch the remote afterwards.</div>
+        <div style="font-size:16px">You can do it now. The file starts with ${au.file && au.file.includes('_slow') ? '16 s of gray, 24 s' : '8 s of gray, 12 s'} of white and gray again — the program syncs on them. Do not touch the remote afterwards.</div>
         <div class="row" style="margin-top:10px"><button class="btn" data-act="fullStop" data-arg="0">Cancel</button></div></div>`
       : `<div class="now"><div class="lbl">Full check ${au.mode.toUpperCase()} · running · do not touch the remote</div>
         <div class="what" style="font-size:24px">${p ? `${esc(p.id)} — ${esc(p.name)}` : '…'}${au.role && au.role !== 'patch' ? ' <span class="muted small">(service)</span>' : ''}</div>
@@ -633,7 +658,7 @@ function viewFull() {
       <div class="row" style="margin-top:10px">
         <button class="btn primary big" data-act="fullStart" data-arg="sdr" ${ready ? '' : 'disabled'}>Start SDR (${seq.sdr ? mmss(seq.sdr.duration) : '14:04'})</button>
         <button class="btn big" data-act="fullStart" data-arg="hdr" ${ready ? '' : 'disabled'}>Start HDR10 (${seq.hdr ? mmss(seq.hdr.duration) : '6:40'})</button></div>
-      <p class="small muted">Files: <span class="mono">AUTO/${esc(seq.sdr ? seq.sdr.file : '')}</span> and <span class="mono">AUTO/${esc(seq.hdr ? seq.hdr.file : '')}</span> — in the patch folder (“Preparation → Save patches”). Play may be pressed before or after “Start” (8 s margin). Use the v3 files; older versions have a different schedule. The program finds the mark, assigns the readings to patches, checks each one and computes everything together.</p></div>`;
+      <p class="small muted">Files: <span class="mono">AUTO/${esc(seq.sdr ? seq.sdr.file : '')}</span> and <span class="mono">AUTO/${esc(seq.hdr ? seq.hdr.file : '')}</span> — in the patch folder (“Preparation → Save patches”). ${F.speed === 'slow' ? '<b>Slow-meter variant</b> (Settings → Meter): every patch is shown twice as long. ' : ''}Play may be pressed before or after “Start”. Use exactly these files; other versions have a different schedule. The program finds the mark, assigns the readings to patches, checks each one and computes everything together.</p></div>`;
   }
   const psCard = `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Projector settings (what is set in the menu)</h2>
     <button class="btn" data-act="psToggle">${S.ui.psOpen ? 'Collapse' : 'Open / edit'}</button></div>
@@ -720,17 +745,19 @@ function viewGpoints(s) {
   const a = an('gpoints'), hist = an('gpointsHistory');
   const st = s.stage || 'prep';
   const vals = s.values || {};
-  const pts = Array.from({ length: 20 }, (_, i) => i + 1);
+  const L = gpLayout();
+  if (!L.n) return `<div class="card"><h2>Gamma by points</h2><p>The selected projector profile has no luminance gamma points. If your menu has them, choose the layout in <b>Settings → Projector → Gamma points</b>. Otherwise set the gamma with the preset; the Full check suggests which one.</p></div>`;
+  const pts = Array.from({ length: L.n }, (_, i) => i + 1);
   const valGrid = (editable) => `<div class="tablewrap"><table class="t">
     <tr><th class="l">Point</th>${pts.map(k => `<th>${k}</th>`).join('')}</tr>
-    <tr><td class="l">Step</td>${pts.map(k => `<td class="muted">${k * 5}%</td>`).join('')}</tr>
+    <tr><td class="l">Step</td>${pts.map(k => `<td class="muted">${k * L.step}%</td>`).join('')}</tr>
     <tr><td class="l">Gain</td>${pts.map(k => editable ? `<td><input type="number" class="gpv" data-gpk="${k}" value="${vals[k] || 0}" style="width:52px;padding:3px"></td>` : `<td><b>${fmtGp(vals[k])}</b></td>`).join('')}</tr></table></div>`;
   const stages = [['prep', 'Start'], ['base', 'Measure'], ['plan', 'Corrections'], ['check', 'Check'], ['done', 'Done']];
   const bar = `<div class="seg" style="margin-bottom:12px">${stages.map(([id, t], i) => `<button class="${id === st || (st === 'check' && id === 'check') ? 'sel' : ''}" disabled>${i + 1}. ${t}</button>`).join('')}</div>`;
   const rules = `<div class="card"><h2>How it works</h2><ul class="small">
-    <li>The Vidda C3S has <b>20 points</b>: point k controls the step at <b>k·5%</b> (1 → 5%, 10 → 50%, 19 → 95%), smoothly in between. One Gain step ≈ <b>${fmt(s.perStep || 2.3, 2)}%</b> of its step's luminance${s.learn ? ` (refined from results, fit ${Math.round(s.learn.fit * 100)}%)` : ''}.</li>
+    <li>This profile has <b>${L.n} points</b>: point k controls the step at <b>k·${L.step}%</b> (1 → ${L.step}%, ${L.n / 2} → 50%, ${L.n - 1} → ${100 - L.step}%), smoothly in between${L.n === 20 ? ' (verified on a Vidda C3S)' : ' — if the point probe shows otherwise, change the layout in Settings'}. One Gain step ≈ <b>${fmt(s.perStep || 2.3, 2)}%</b> of its step's luminance${s.learn ? ` (refined from results, fit ${Math.round(s.learn.fit * 100)}%)` : ''}.</li>
     <li>The projector applies a point change <b>after leaving the menu</b>, and an open menu spills light into the meter. So points are not tuned live: the program computes corrections for all points at once, you set them, <b>close the menu</b> and do a check pass.</li>
-    <li>Point 20 (100%) is white, leave it alone. Point 1 (5%) is almost black: tune it only at night, with no room light.</li>
+    <li>Point ${L.n} (100%) is white, leave it alone. Point 1 (${L.step}%) is almost black: tune it only at night, with no room light.</li>
     <li>Shadows (10–20%) can be measured honestly only in full darkness: in daytime room light adds to black.</li></ul></div>`;
   let body = '';
   if (st === 'prep') {
@@ -966,7 +993,7 @@ function viewHDR(s) {
    <li>Play <b>HDR_06</b> — the player switches the projector to HDR10. Picture mode Filmmaker/HDR; Dynamic Contrast, AI contrast and dynamic tone mapping — off.</li>
    <li>Laser: if HDR has its own level — maximum; if it is shared with SDR — leave as is (fixed: ${esc(sess().laserLevel || '—')}).</li>
    <li>Target — neutral gray (RGB balance 98–102) over the whole range: White Balance in the HDR memory, Gain on bright steps, Offset on dark ones.</li>
-   <li><b>After changing the HDR balance, re-measure SDR</b> (“Summary” step → recheck 100/50/20/10): on the Vidda C3S the balance may be shared between the modes.</li></ol>
+   <li><b>After changing the HDR balance, re-measure SDR</b> (“Summary” step → recheck 100/50/20/10): on Vidda projectors the balance may be shared between the modes.</li></ol>
    <p class="small muted">Movies carry their own metadata (MaxCLL etc.) and the projector tone mapping adapts: patches set neutrality, not absolute accuracy.</p></div>
   ${passBlock('hdr', a)}
   <div class="card"><div class="kvgrid">
@@ -1115,6 +1142,10 @@ function hdrChart(a) {
 // ============================================================ settings
 function settingsModal() {
   const st = S.sv.settings, s = sess(), pp = s.projectorProfile || {};
+  const PR = S.sv.profiles || { projectors: [], meters: [] };
+  const mp = PR.meters.find(m => m.id === st.meterProfile);
+  const prj = PR.projectors.find(p => p.id === pp.model);
+  const dts = (S.ui.check && S.ui.check.displayTypes) || [];
   const opt = (v, cur, lab) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${lab}</option>`;
   const sessions = S.sv.sessions.map(x => `<tr><td class="l">${esc(x.name)}${x.id === s.id ? ' <span class="pill info">current</span>' : ''}</td><td class="muted small">${esc((x.updatedAt || '').replace('T', ' ').slice(0, 16))}</td><td>${x.count}</td>
     <td>${x.id !== s.id ? `<button class="btn" data-act="openSession" data-arg="${x.id}">Open</button>` : ''}</td></tr>`).join('');
@@ -1123,9 +1154,15 @@ function settingsModal() {
   <h3>Meter</h3>
   <div class="grid2">
    <label>Reading source<br><select id="sMode">${opt('argyll', st.meterMode, 'ArgyllCMS spotread (interactive)')}${opt('oneshot', st.meterMode, 'ArgyllCMS spotread -O (one reading per launch, fallback)')}${opt('mock', st.meterMode, 'Projector simulation (no meter)')}</select></label>
-   <label>Path to spotread (empty = find automatically)<br><input type="text" id="sPath" value="${esc(st.spotreadPath)}" placeholder="/opt/homebrew/bin/spotread" style="width:100%"></label>
+   <label>Path to spotread (empty = find automatically)<br><input type="text" id="sPath" value="${esc(st.spotreadPath)}" placeholder="${S.sv.platform === 'windows' ? 'C:\\Argyll_V3.3.0\\bin\\spotread.exe' : '/opt/homebrew/bin/spotread'}" style="width:100%"></label>
    <label>Integration mode (-Y)<br><select id="sRefresh">${opt('', st.refresh, 'auto (default)')}${opt('n', st.refresh, 'n — non-refresh')}${opt('r', st.refresh, 'r — refresh')}</select></label>
    <label>Correction .ccmx / .ccss (-X)<br><input type="text" id="sCcmx" value="${esc(st.ccmx)}" placeholder="~/calib/laser.ccss" style="width:100%"></label>
+   <label>Meter model<br><select id="sMeterProf" style="width:100%;max-width:100%">${opt('', st.meterProfile || '', 'not selected (standard timing)')}${PR.meters.map(m => opt(m.id, st.meterProfile || '', esc(m.name) + (m.verified ? ' ✓' : ''))).join('')}</select>
+     <span class="small muted" style="display:block" id="sMeterNote">${esc(mp ? mp.note : 'Pick your meter: it decides which auto-run video to play.')}</span></label>
+   <label>Auto-run video<br><select id="sSpeed" style="width:100%;max-width:100%">${opt('', st.autoSpeed || '', 'from the meter model (now: ' + (S.sv.autoSpeed === 'slow' ? 'slow' : 'standard') + ')')}${opt('std', st.autoSpeed || '', 'standard (i1Display Pro / Plus)')}${opt('slow', st.autoSpeed || '', 'slow meter (2× longer patches)')}</select></label>
+   <label>Display type (-y)<br><input type="text" id="sDtype" list="dtypes" value="${esc(st.displayType || '')}" placeholder="default" style="width:90px">
+     <datalist id="dtypes">${dts.map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</datalist>
+     <span class="small muted">${dts.length ? dts.map(([k, v]) => `<b>${esc(k)}</b> ${esc(v)}`).join(' · ') : 'Letters from “spotread -?” for your meter (e.g. an installed .ccss). Empty = default.'}</span></label>
    <label>Mode flag<br><input type="text" id="sFlag" value="${esc(st.flag)}" style="width:80px"> <span class="small muted">-e (emissive). Change only if there are problems.</span></label>
    <label>Extra spotread arguments<br><input type="text" id="sExtra" value="${esc(st.extraArgs)}" style="width:100%"></label>
    <label>Averaging (readings per point)<br><input type="number" id="sAvg" min="1" max="10" value="${st.avg}" style="width:80px"></label>
@@ -1137,7 +1174,11 @@ function settingsModal() {
   <div class="grid2">
    <label>Session name<br><input type="text" id="sName" value="${esc(s.name)}" style="width:100%"></label>
    <label>SDR target gamma<br><select id="sGamma">${opt('2.2', s.gamma, '2.2')}${opt('2.3', s.gamma, '2.3')}${opt('2.4', s.gamma, '2.4 (dark room)')}${opt('bt1886', s.gamma, 'BT.1886')}</select></label>
-   <label>Projector<br><input type="text" id="pName" value="${esc(pp.name || '')}" style="width:100%"></label>
+   <label>Projector model<br><select id="pModel" style="width:100%;max-width:100%">${PR.projectors.map(p => opt(p.id, pp.model || 'vidda-c3s', esc(p.name) + (p.verified ? ' ✓ verified' : ''))).join('')}</select>
+     <span class="small muted" style="display:block" id="pModelNote">${esc(prj ? prj.note : '')}</span></label>
+   <label>Gamma points layout (Gamma → Control Point)<br><select id="pGp">${opt(20, pp.gpCount ?? 20, '20 points, 5 % apart')}${opt(10, pp.gpCount ?? 20, '10 points, 10 % apart')}${opt(0, pp.gpCount ?? 20, 'no luminance gamma points')}</select>
+     <span class="small muted" style="display:block">Count the points in your menu. Not sure? Gamma by points → point probe shows where a point acts.</span></label>
+   <label>Projector name (for the report)<br><input type="text" id="pName" value="${esc(pp.name || '')}" style="width:100%"></label>
    <label>Screen: diagonal, inches / gain (for reference)<br><input type="number" id="pSize" value="${pp.screenSizeInches || ''}" style="width:90px"> <input type="number" step="0.05" id="pGain" value="${pp.screenGain || ''}" style="width:90px"></label>
    <label style="grid-column:1/-1">Notes (screen, player…)<br><textarea id="pNotes">${esc(pp.notes || '')}</textarea></label>
   </div>
@@ -1147,7 +1188,7 @@ function settingsModal() {
   <div class="row" style="margin-top:8px"><button class="btn" data-act="newSession">New session</button>
    <button class="btn" data-act="reveal" data-arg="sessions">Sessions folder</button><button class="btn" data-act="showLog">Meter log</button>
    <span style="flex:1"></span><button class="btn danger" data-act="quit">Quit the program</button></div>
-  <p class="small muted">ProjectorCal works offline, with no accounts and no telemetry. Data: ~/Library/Application Support/ProjectorCal.</p>
+  <p class="small muted">ProjectorCal works offline, with no accounts and no telemetry. Data: <span class="mono">${esc(S.sv.dataDir || '')}</span>.</p>
   </div></div>`;
 }
 
@@ -1165,7 +1206,7 @@ function renderReport() {
   el.innerHTML = `
   <div class="row noprint" style="margin-bottom:16px"><button class="btn" data-act="closeReport">← Back</button><button class="btn primary" data-act="print">Print / PDF</button>
    <span class="small muted">In the print dialog: PDF → “Save as PDF”.</span></div>
-  <h1>Calibration report: ${esc((s.projectorProfile || {}).name || 'Vidda C3S')}</h1>
+  <h1>Calibration report: ${esc((s.projectorProfile || {}).name || 'projector')}</h1>
   <p class="muted">${esc(s.name)} · created ${esc(date)} · ProjectorCal</p>
   ${section('Conditions', `<table class="t">
     <tr><td class="l">Source</td><td class="l">player → HDMI → projector; patches from Plex or USB</td></tr>
@@ -1220,7 +1261,7 @@ const ACT = {
     (it.set || []).forEach(x => { changes[x.path] = x.to; });
     act('/api/psettings', { changes });
   },
-  gpStart: () => { if (confirm('Are all 20 points set to 0 in the menu?')) act('/api/gp', { action: 'start', preset: $('#gpPreset').value.trim() }); },
+  gpStart: () => { if (confirm(`Are all ${gpLayout().n} points set to 0 in the menu?`)) act('/api/gp', { action: 'start', preset: $('#gpPreset').value.trim() }); },
   gpContinue: () => {
     const values = {};
     document.querySelectorAll('.gpv').forEach(i => { values[i.dataset.gpk] = +i.value || 0; });
@@ -1274,14 +1315,16 @@ const ACT = {
   chartLog: el => { S.ui.chartLog[el.dataset.step] = el.dataset.arg === '1'; renderStep(true); },
   delMeas: el => { if (confirm('Delete this reading?')) act('/api/measurement/delete', { id: el.dataset.arg }); },
   settings: () => { S.ui.settings = true; $('#modal')._html = null; renderModal(); },
+  useMeter: async el => { try { await api('/api/settings', { meterProfile: el.dataset.arg }); localNotice('ok', 'Meter model saved.'); } catch (e) { localNotice('bad', e.message); } await poll(true); },
   closeSettings: () => { S.ui.settings = false; $('#modal')._html = null; renderModal(); },
   saveSettings: async () => {
     const v = id => $('#' + id).value;
     try {
       await api('/api/settings', { meterMode: v('sMode'), spotreadPath: v('sPath').trim(), refresh: v('sRefresh'), ccmx: v('sCcmx').trim(),
         flag: v('sFlag').trim() || '-e', extraArgs: v('sExtra').trim(), avg: +v('sAvg') || 3, stabilityPct: +v('sStab') || 0.7,
-        autoDefault: $('#sAuto').checked, theme: v('sTheme') });
-      await api('/api/fields', { name: v('sName'), gamma: v('sGamma'), projectorProfile: { name: v('pName'), screenSizeInches: +v('pSize') || null,
+        autoDefault: $('#sAuto').checked, theme: v('sTheme'), meterProfile: v('sMeterProf'), autoSpeed: v('sSpeed'),
+        displayType: v('sDtype').trim() });
+      await api('/api/fields', { name: v('sName'), gamma: v('sGamma'), projectorProfile: { model: v('pModel'), gpCount: +v('pGp'), name: v('pName'), screenSizeInches: +v('pSize') || null,
         screenGain: +v('pGain') || null, notes: v('pNotes') } });
       S.ui.settings = false; S.ui.check = null; $('#modal')._html = null;
       localNotice('ok', 'Settings saved.');
@@ -1330,6 +1373,16 @@ document.addEventListener('change', ev => {
   if (el.dataset.menu) return act('/api/fields', { menuValues: { [el.dataset.menu]: { [el.dataset.key]: el.value } } });
   if (el.dataset.notes) return act('/api/step', { stepId: el.dataset.notes, notes: el.value });
   if (el.id === 'laserLevel') return act('/api/fields', { laserLevel: el.value });
+  if (el.id === 'sMeterProf') {
+    const m = ((S.sv.profiles || {}).meters || []).find(x => x.id === el.value);
+    $('#sMeterNote').textContent = m ? m.note + (m.speed === 'slow' ? ' → slow auto-run video.' : ' → standard auto-run video.') : 'Pick your meter: it decides which auto-run video to play.';
+    return;
+  }
+  if (el.id === 'pModel') {          // a model change suggests its gamma layout and name
+    const pr = ((S.sv.profiles || {}).projectors || []).find(p => p.id === el.value);
+    if (pr) { $('#pGp').value = String(pr.gpCount); $('#pModelNote').textContent = pr.note; if (!/[a-z]/i.test($('#pName').value) || ((S.sv.profiles.projectors || []).some(p => p.name === $('#pName').value))) $('#pName').value = pr.name; }
+    return;
+  }
   if (el.dataset.ps) return act('/api/psettings', { changes: { [el.dataset.ps]: el.value } });
   if (el.dataset.mock) return mockChange(el);
 });

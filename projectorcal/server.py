@@ -48,9 +48,21 @@ def is_mac():
 
 
 def reveal(path):
-    if is_mac():
-        subprocess.Popen(["open", "-R", path] if os.path.isfile(path) else ["open", path],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    """Show a file or folder in Finder / Explorer / the Linux file manager."""
+    try:
+        if is_mac():
+            subprocess.Popen(["open", "-R", path] if os.path.isfile(path) else ["open", path],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        elif os.name == "nt":
+            if os.path.isfile(path):
+                subprocess.Popen(["explorer", "/select,", os.path.normpath(path)])
+            else:
+                os.startfile(os.path.normpath(path))  # noqa: S606 — a local folder
+        else:
+            subprocess.Popen(["xdg-open", path if os.path.isdir(path) else os.path.dirname(path)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        pass
 
 
 from .sequence import VERSION as SEQ_VERSION  # noqa: E402
@@ -69,6 +81,8 @@ SDR_28…51  saturation 25/50/75/100%    SDR_52 PLUGE    SDR_53 white clipping
 HDR_01…21  HDR10 PQ gray 100% → 0%
 AUTO/ProjectorCal_AUTO_SDR_v3.mp4    full SDR check (14 min): all patches in a row — for the automatic run
 AUTO/ProjectorCal_AUTO_HDR10_v3.mp4  full HDR10 check (6.5 min)
+AUTO/*_v3_slow.mp4                   the same for slower meters (ColorMunki Display, Spyder, i1Pro…): 27 / 13 min
+                                     ProjectorCal shows which one to play (Settings → Meter model).
 
 All files 3840×2160, 24p, HEVC Main10, limited range. HDR10: PQ / BT.2020, mastering P3-D65 1000 nits.
 patches.json holds the targets for the program; the player does not need it (but it does no harm).
@@ -326,10 +340,11 @@ def running_instance(store):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="projectorcal", description="ProjectorCal — Vidda projector calibration")
+    ap = argparse.ArgumentParser(prog="projectorcal", description="ProjectorCal — Vidda / Hisense projector calibration")
     ap.add_argument("--port", type=int, default=0, help="port (default 8765 or the next free one)")
     ap.add_argument("--no-browser", action="store_true", help="do not open the browser")
-    ap.add_argument("--data-dir", help="data folder (default ~/Library/Application Support/ProjectorCal)")
+    ap.add_argument("--data-dir", help="data folder (default: macOS ~/Library/Application Support/ProjectorCal, "
+                                       "Windows %%APPDATA%%\\ProjectorCal, Linux ~/.local/share/ProjectorCal)")
     ap.add_argument("--mock", action="store_true", help="enable the meter simulation")
     args = ap.parse_args(argv)
 
@@ -370,7 +385,7 @@ def main(argv=None):
     def on_signal(signum, frame):
         threading.Thread(target=app.shutdown, daemon=True).start()
 
-    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+    for sig in [getattr(signal, n) for n in ("SIGTERM", "SIGINT", "SIGHUP", "SIGBREAK") if hasattr(signal, n)]:
         try:
             signal.signal(sig, on_signal)
         except (ValueError, OSError):

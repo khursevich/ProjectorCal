@@ -16,9 +16,10 @@ import uuid
 from . import analysis as A
 from . import colorimetry as C
 from .catalog import pass_patches
-from .meter import ArgyllMeter, MeterError, OneShotMeter, build_args, find_spotread
+from .meter import ArgyllMeter, MeterError, OneShotMeter, build_args, find_spotread, install_hint, platform_name
 from .mock import MockMeter, MockProjector
 from . import fulltest as FT
+from . import profiles as PR
 from . import psettings as PS
 from . import sequence as SEQ
 from .autorun import AutoRun
@@ -53,6 +54,7 @@ class Controller:
         if self.session is None:
             self.session = new_session(self.settings)
             store.save(self.session)
+        self._apply_profile()
         self.projector = MockProjector()
         self.mock_delay = mock_delay
         self.meter = None
@@ -131,8 +133,8 @@ class Controller:
         exe = find_spotread(self.settings.get("spotreadPath"))
         self.meter_exe = exe
         if not exe:
-            raise MeterError("spotread not found. Install ArgyllCMS: brew install argyll-cms "
-                             "(or set the path in Settings).", kind="notfound")
+            raise MeterError("spotread not found. " + install_hint() + " (or set the path in Settings).",
+                             kind="notfound")
         args = build_args(self.settings)
         cls = OneShotMeter if mode == "oneshot" else ArgyllMeter
         return cls(exe, args, log=self._log)
@@ -656,8 +658,12 @@ class Controller:
                 s["name"] = str(d["name"]).strip()[:200]
             if "projectorProfile" in d and isinstance(d["projectorProfile"], dict):
                 s["projectorProfile"].update({k: d["projectorProfile"][k] for k in
-                                              ("name", "screenSizeInches", "screenGain", "notes")
+                                              ("name", "screenSizeInches", "screenGain", "notes", "model", "gpCount")
                                               if k in d["projectorProfile"]})
+                if s["projectorProfile"].get("model") not in PR.PROJECTOR_BY_ID:
+                    s["projectorProfile"]["model"] = "vidda-other"
+                s["projectorProfile"]["gpCount"] = PR.gp_count(s["projectorProfile"])
+                self._apply_profile()
             if "menuValues" in d and isinstance(d["menuValues"], dict):
                 for mode, vals in d["menuValues"].items():
                     if mode in s["menuValues"] and isinstance(vals, dict):
@@ -840,6 +846,19 @@ class Controller:
             return float(os.environ.get("PROJECTORCAL_MOCK_SPEED", "1"))
         return 1.0
 
+    def _apply_profile(self):
+        """Gamma point layout of the session's projector (20 × 5 %, 10 × 10 % or none)."""
+        A.set_gp_layout(PR.gp_count(self.session.get("projectorProfile")))
+        self.full_cache = None
+
+    def auto_speed(self):
+        """Which auto-run video to play: "std" (i1Display Pro/Plus timing) or "slow" (twice the time per reading)."""
+        sp = self.settings.get("autoSpeed") or ""
+        if sp in SEQ.SPEEDS:
+            return sp
+        mid = self.settings.get("meterProfile") or ""
+        return PR.METER_BY_ID[mid]["speed"] if mid in PR.METER_BY_ID else "std"
+
     def full_start(self, mode):
         with self.lock:
             if mode not in ("sdr", "hdr"):
@@ -847,7 +866,7 @@ class Controller:
             if self.meter_state != "ready":
                 self.notice("bad", "Meter is not ready.")
                 return
-            seq = SEQ.build(self.catalog, mode)
+            seq = SEQ.build(self.catalog, mode, self.auto_speed())
             self.autorun = self._make_autorun(seq, speed=self._speed())
             self.auto_meta = {"mode": mode, "startedAt": now_iso(), "t": time.monotonic(), "file": seq["file"],
                               "duration": seq["duration"], "settings": json.loads(json.dumps(self.session["psettings"]))}
@@ -912,7 +931,8 @@ class Controller:
         run = {"id": run_id, "mode": meta["mode"], "pass": st["pass"], "startedAt": meta["startedAt"],
                "finishedAt": now_iso(), "file": meta["file"], "settings": meta["settings"],
                # schedule and raw readings (file time) — the run can be re-analyzed by a newer program version
-               "seq": {k: ar.seq[k] for k in ("mode", "version", "segments", "anchor", "endAnchor", "duration", "file")},
+               "seq": {k: ar.seq[k] for k in ("mode", "version", "speed", "segments", "anchor", "endAnchor", "duration",
+                                               "file") if k in ar.seq},
                "raw": ar.raw()}
         used = self._store_run_result(run, res, step)
         self.session["runs"].append(run)
@@ -1065,8 +1085,9 @@ class Controller:
             latest[r["mode"]] = (r, an)
         out = {"runs": [], "latest": {}, "knowledge": FT.explain_knowledge(know),
                "sens": [{"group": PS.group_name(g), "key": k, "value": v} for (g, k), v in sens.items()],
-               "sequences": {m: {"file": SEQ.build(self.catalog, m)["file"],
-                                 "duration": SEQ.build(self.catalog, m)["duration"]} for m in ("sdr", "hdr")}}
+               "speed": self.auto_speed(),
+               "sequences": {m: {"file": q["file"], "duration": q["duration"]}
+                             for m, q in ((m, SEQ.build(self.catalog, m, self.auto_speed())) for m in ("sdr", "hdr"))}}
         prev_by_mode = {}
         for r, an in runs_an:
             p = prev_by_mode.get(r["mode"])
@@ -1213,7 +1234,7 @@ class Controller:
     def update_settings(self, d):
         with self.lock:
             restart = False
-            for k in ("meterMode", "spotreadPath", "flag", "refresh", "ccmx", "extraArgs"):
+            for k in ("meterMode", "spotreadPath", "flag", "refresh", "ccmx", "extraArgs", "displayType"):
                 if k in d and d[k] != self.settings.get(k):
                     self.settings[k] = d[k] if d[k] is not None else ""
                     restart = True
@@ -1226,12 +1247,20 @@ class Controller:
             for k in ("autoDefault",):
                 if k in d:
                     self.settings[k] = bool(d[k])
+            if "meterProfile" in d and (d["meterProfile"] or "") in list(PR.METER_BY_ID) + [""]:
+                self.settings["meterProfile"] = d["meterProfile"] or ""
+                self.full_cache = None
+            if "autoSpeed" in d and (d["autoSpeed"] or "") in list(SEQ.SPEEDS) + [""]:
+                self.settings["autoSpeed"] = d["autoSpeed"] or ""
+                self.full_cache = None
             if "theme" in d and d["theme"] in ("dark", "light", "auto"):
                 self.settings["theme"] = d["theme"]
             self.store.save_settings(self.settings)
             self.session["meter"] = {"flag": self.settings.get("flag", "-e"),
                                      "refresh": self.settings.get("refresh") or None,
-                                     "ccmx": self.settings.get("ccmx") or None}
+                                     "ccmx": self.settings.get("ccmx") or None,
+                                     "displayType": self.settings.get("displayType") or None,
+                                     "profile": self.settings.get("meterProfile") or None}
             if restart:
                 self.jobs.clear()
                 self.want_meter = True
@@ -1248,6 +1277,7 @@ class Controller:
         with self.lock:
             self.jobs.clear()
             self.session = new_session(self.settings, name)
+            self._apply_profile()
             self.drift = None
             self.store.save(self.session)
             self._enter_step("prep")
@@ -1258,6 +1288,7 @@ class Controller:
             s = self.store.load(sid)
             self.jobs.clear()
             self.session = s
+            self._apply_profile()
             self.drift = None
             self._enter_step(s.get("currentStep", "prep"))
 
@@ -1379,7 +1410,8 @@ class Controller:
             an["full"] = self.full_view()
             an["verifyHistory"] = A.pass_history(s, self.catalog, "verify")
             return {"rev": self.rev, "session": s, "analysis": an, "settings": self.settings,
-                    "psFields": PS.fields(),
+                    "psFields": PS.fields(), "profiles": PR.public(), "autoSpeed": self.auto_speed(),
+                    "platform": platform_name(), "dataDir": self.store.root,
                     "sessions": self.store.list()}
 
     def log_lines(self):
@@ -1395,5 +1427,7 @@ def meter_check_info(settings):
         return {"found": False}
     info = probe_spotread(exe)
     info["found"] = True
+    info["suggested"], info["ambiguous"] = PR.detect_meter(info.get("instruments"))
+    info["displayTypes"] = PR.parse_display_types(info.get("raw"))
     return info
 

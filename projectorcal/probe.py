@@ -16,7 +16,7 @@ import os
 import sys
 
 from . import colorimetry as C
-from .meter import ArgyllMeter, MeterError, find_spotread, probe_spotread
+from .meter import ArgyllMeter, MeterError, find_spotread, install_hint, probe_spotread
 
 
 def main(argv=None):
@@ -38,7 +38,7 @@ def main(argv=None):
     raw = []
     exe = find_spotread(args.spotread)
     if not exe:
-        say("spotread not found. Install it: brew install argyll-cms")
+        say("spotread not found. " + install_hint())
         return 1
     info = probe_spotread(exe)
     say("spotread: %s  (ArgyllCMS %s)" % (exe, info.get("version") or "?"))

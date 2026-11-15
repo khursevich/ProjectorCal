@@ -117,6 +117,8 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(CAT.hdr_gray()), 21)
 
     def test_files_exist(self):
+        if not os.path.isdir(os.path.join(CAT.dir, "SDR")):
+            self.skipTest("video patches not installed (they are distributed via Releases, not git)")
         for p in CAT.patches:
             self.assertTrue(os.path.exists(os.path.join(CAT.dir, p["file"])), p["file"])
 
@@ -484,6 +486,80 @@ class PlausibilityTests(unittest.TestCase):
     def test_drift(self):
         self.assertIsNone(A.brightness_drift(self.s, 103))
         self.assertAlmostEqual(A.brightness_drift(self.s, 94), -0.06)
+
+
+class ProfileTests(unittest.TestCase):
+    """Projector / meter profiles (v1.7): gamma layouts, meter detection, slow auto-run schedule."""
+
+    def tearDown(self):
+        A.set_gp_layout(20)
+
+    def test_gp_layout_10_points(self):
+        A.set_gp_layout(10)
+        self.assertEqual(A.gp_stim(3), 30)
+        self.assertEqual(A.GP_POINTS, tuple(range(1, 10)))
+        # mids too dark by 10 % around 40 %: the 10-point plan lifts point 4 (40 %) and nothing at the top
+        rows = [{"measured": True, "stim": k, "dev": (-10.0 if 30 <= k <= 50 else 0.0), "Y": 1.0}
+                for k in range(10, 100, 5)]
+        plan = {r["point"]: r for r in A.gp_plan({"rows": rows}, {})}
+        self.assertEqual(sorted(plan), list(range(1, 10)))
+        self.assertEqual(plan[4]["stim"], 40)
+        self.assertGreater(plan[4]["delta"], 2)
+        self.assertEqual(plan[9]["delta"], 0)
+        self.assertIn(4, A.gp_queue({"rows": rows}))
+
+    def test_no_gamma_points_suggests_preset(self):
+        from projectorcal import fulltest as FT
+        A.set_gp_layout(0)
+        rows = [{"measured": True, "stim": k, "dev": 8.0, "Y": 1.0} for k in range(10, 100, 5)]
+        self.assertEqual(A.gp_plan({"rows": rows}, {}), [])
+        self.assertEqual(A.gp_queue({"rows": rows}), [])
+        it = FT._plan_gamma_preset({"rows": rows}, {"gammaPreset": "2.2"})
+        self.assertEqual(it["level"], "bad")
+        self.assertIn("darker (higher)", it["text"])
+        A.set_gp_layout(20)
+        self.assertEqual(A.gp_stim(3), 15)
+
+    def test_meter_detection(self):
+        from projectorcal import profiles as P
+        self.assertEqual(P.detect_meter(["/dev/bus/usb/001/005 (GretagMacbeth i1 DisplayPro, ColorMunki Display)"]),
+                         ("i1d3", True))
+        self.assertEqual(P.detect_meter(["usb (Datacolor SpyderX)"])[0], "spyder")
+        self.assertEqual(P.detect_meter(["usb (X-Rite i1 Pro 2)"])[0], "i1pro")
+        self.assertEqual(P.detect_meter(["usb (Klein K-10)"])[0], "k10")
+        self.assertEqual(P.detect_meter(["usb (Hughski ColorHug2)"])[0], "other-slow")
+        self.assertEqual(P.detect_meter([]), (None, False))
+        raw = (" -y X                 Display type - instrument specific list to choose from:\n"
+               "    l                    LCD (Generic)\n    1                    Factory Default [Default] (Generic)\n"
+               "    u                    WLED Family Display (DisplayCAL)\n -I illum             Set illumination\n")
+        self.assertEqual([k for k, _ in P.parse_display_types(raw)], ["l", "1", "u"])
+        for m in P.METERS:
+            self.assertIn(m["speed"], ("std", "slow"))
+        for p in P.PROJECTORS:
+            self.assertIn(p["gpCount"], P.GP_LAYOUTS)
+
+    def test_slow_schedule(self):
+        from projectorcal import sequence as Q
+        std, slow = Q.build(CAT, "sdr"), Q.build(CAT, "sdr", "slow")
+        self.assertNotIn("speed", std)             # the v3 standard videos stay valid
+        self.assertEqual(slow["file"], "ProjectorCal_AUTO_SDR_v3_slow.mp4")
+        self.assertEqual([s["patchId"] for s in std["segments"]], [s["patchId"] for s in slow["segments"]])
+        for a, b in zip(std["segments"], slow["segments"]):
+            self.assertGreaterEqual(b["dur"], a["dur"])
+        self.assertGreater(slow["duration"], 1.8 * std["duration"])
+
+    def test_meter_args_display_type(self):
+        from projectorcal.meter import build_args
+        self.assertEqual(build_args({"flag": "-e", "displayType": "u"}), ["-e", "-y", "u"])
+        self.assertEqual(build_args({"flag": "-e", "displayType": "u; rm"}), ["-e"])
+
+    def test_old_session_gets_profile(self):
+        from projectorcal.session import migrate
+        s = new_session({})
+        del s["projectorProfile"]["model"], s["projectorProfile"]["gpCount"]
+        s = migrate(s)
+        self.assertEqual(s["projectorProfile"]["model"], "vidda-c3s")
+        self.assertEqual(s["projectorProfile"]["gpCount"], 20)
 
 
 if __name__ == "__main__":

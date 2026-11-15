@@ -57,8 +57,8 @@ class ParserTests(unittest.TestCase):
         for line, exp in [
             (" Result is XYZ: 47.523500 50.000000 54.441500, D50 Lab is 50.0 0.0 0.0", (47.5235, 50.0, 54.4415)),
             (" Result is XYZ: 95.1 100.2 108.9, Yxy: 100.2 0.3127 0.3290", (95.1, 100.2, 108.9)),
-            ("Result is XYZ: 1.0e-02 1.1e-02 1.2e-02", (0.01, 0.011, 0.012)),
-            ("Result is XYZ: 0.012345, 0.013456, 0.014567", (0.012345, 0.013456, 0.014567)),
+            ("Result is XYZ: 1.0e-02 1.1e-02 1.2e-02\n", (0.01, 0.011, 0.012)),
+            ("Result is XYZ: 0.012345, 0.013456, 0.014567\n", (0.012345, 0.013456, 0.014567)),
         ]:
             m = RESULT_RE.search(line)
             self.assertIsNotNone(m, line)
@@ -186,6 +186,122 @@ class ArgyllMeterTests(EnvMixin, unittest.TestCase):
                 break
             time.sleep(0.1)
         self.assertFalse(pid_alive(child))
+
+
+class FakeConPty:
+    """Stand-in for conpty.ConPtyProcess on Linux: the stub runs on a pty, and its output is delivered the way a
+    Windows pseudo console does it — VT sequences around the text, CRLF, arbitrary chunk boundaries (even inside an
+    escape sequence)."""
+
+    def __init__(self, argv):
+        import pty
+        import random
+        import select as sel
+        self._sel, self.rng = sel, random.Random(7)
+        master, slave = pty.openpty()
+        self.p = subprocess.Popen(argv, stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
+        os.close(slave)
+        self.fd, self.pid, self.pending = master, self.p.pid, b""
+
+    def read(self, timeout):
+        if not self.pending:
+            r, _, _ = self._sel.select([self.fd], [], [], timeout)
+            if not r:
+                return b""
+            try:
+                data = os.read(self.fd, 4096)
+            except OSError:
+                return None
+            if not data:
+                return None
+            data = data.replace(b"\r\n", b"\n").replace(b"\n", b"\x1b[K\r\n")
+            self.pending = b"\x1b[?25l" + data + b"\x1b]0;spotread\x07\x1b[?25h"
+        n = self.rng.randint(1, 9)
+        out, self.pending = self.pending[:n], self.pending[n:]
+        return out
+
+    def write(self, data):
+        os.write(self.fd, data)
+
+    def poll(self):
+        return self.p.poll()
+
+    def wait(self, timeout):
+        return self.p.wait(timeout)
+
+    def terminate(self):
+        if self.p.poll() is None:
+            self.p.kill()
+
+    def close(self):
+        self.terminate()
+        self.p.wait(2)
+        os.close(self.fd)
+
+
+class WindowsPathTests(EnvMixin, unittest.TestCase):
+    """The Windows code path of ArgyllMeter (pseudo console + VT cleaning) against the stubs."""
+
+    def setUp(self):
+        super().setUp()
+        from projectorcal import conpty, meter
+        self._saved = (meter.IS_WIN, conpty.ConPtyProcess)
+        meter.IS_WIN, conpty.ConPtyProcess = True, FakeConPty
+
+    def tearDown(self):
+        from projectorcal import conpty, meter
+        meter.IS_WIN, conpty.ConPtyProcess = self._saved
+        super().tearDown()
+
+    def test_readings_calibration_failure(self):
+        os.environ["FAKE_CALIB"] = "1"
+        os.environ["FAKE_FAIL_AT"] = "3"
+        m = self.meter()
+        self.assertEqual(m.start(), "calibration")
+        self.assertEqual(m.continue_calibration(), "ready")
+        self.assertEqual(m.read(), (47.5235, 50.0, 54.4415))
+        self.assertEqual(m.read(), (95.1, 100.2, 108.9))
+        with self.assertRaises(MeterError) as cm:
+            m.read()
+        self.assertEqual(cm.exception.kind, "failed")
+        vals = [m.read() for _ in range(10)]
+        self.assertTrue(all(len(v) == 3 for v in vals))
+        self.assertFalse(any("\x1b" in x for x in self.logs))
+        m.close()
+        self.assertFalse(m.alive)
+
+    def test_disconnect_and_oneshot(self):
+        os.environ["FAKE_EXIT_AT"] = "2"
+        m = self.meter()
+        m.start()
+        m.read()
+        with self.assertRaises(MeterError) as cm:
+            m.read()
+        self.assertEqual(cm.exception.kind, "eof")
+        script = os.path.join(self.tmp, "oneshot")
+        with open(script, "w") as f:
+            f.write("#!/bin/sh\necho ' Result is XYZ: 1 2 3, Yxy: 2 0.1 0.2'\n")
+        os.chmod(script, 0o755)
+        o = OneShotMeter(script, ["-e"], log=self.logs.append)
+        o.start()
+        self.assertEqual(o.read(), (1.0, 2.0, 3.0))
+        self.assertEqual(o.read(), (1.0, 2.0, 3.0))
+        o.close()
+
+    def test_find_spotread_windows_folder(self):
+        from projectorcal import meter
+        saved = meter.EXE
+        meter.EXE = "spotread.exe"
+        try:
+            d = os.path.join(self.tmp, "Argyll_V3.3.0", "bin")
+            os.makedirs(d)
+            exe = os.path.join(d, "spotread.exe")
+            with open(exe, "w") as f:
+                f.write("")
+            os.chmod(exe, 0o755)
+            self.assertEqual(meter.find_spotread(os.path.join(self.tmp, "Argyll_V3.3.0")), exe)  # folder is enough
+        finally:
+            meter.EXE = saved
 
 
 class ProbeTests(EnvMixin, unittest.TestCase):

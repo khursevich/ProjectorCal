@@ -55,6 +55,8 @@ class AutoRun:
         self.expected_xy = expected_xy or {}
         self.white_hint = white_hint
         self.speed = speed               # for tests: the video "plays" faster
+        from .sequence import SPEEDS
+        self.slow = SPEEDS.get(seq.get("speed", "std"), 1.0)   # slow-meter video: every reading may take ×slow longer
         self.segs = seq["segments"]
         self.readings = []               # (t0, t1, XYZ)
         self.state = "arming"            # arming | running | done
@@ -102,6 +104,9 @@ class AutoRun:
             Yi = r[i][2][1]
             if Yi < bright_min or abs(r[i + 1][2][1] / Yi - 1) >= 0.08:
                 i += 1
+                continue
+            if i + 2 < n and r[i + 1][2][1] > 1.03 * Yi and abs(r[i + 2][2][1] / r[i + 1][2][1] - 1) < 0.03:
+                i += 1                            # r[i] caught the rise (a mix): the plateau starts at the next reading
                 continue
             j = i + 1
             while True:
@@ -156,12 +161,13 @@ class AutoRun:
         mark_w = [sg for sg in self.segs if sg["role"] == "mark"][0]["dur"]
         out, i = [], 0
         while True:
-            res = self._find_falling_edge(self.readings, min_bright_span=mark_w - 1.5, start_idx=i)
+            tol = 1.5 * self.slow                 # a slow meter's readings are longer: the edges are less precise
+            res = self._find_falling_edge(self.readings, min_bright_span=mark_w - tol, start_idx=i)
             if not res:
                 return out
             t_edge, Yb, t_rise, nxt = res
             span = (t_edge - t_rise) * self.speed
-            if abs(span - mark_w) <= 1.5:
+            if abs(span - mark_w) <= tol:
                 out.append((t_edge, Yb, t_rise, span))
             i = max(nxt, i + 1)
 
@@ -198,7 +204,7 @@ class AutoRun:
                 i += 1
                 continue
             nxt = rr[i + 1] if i + 1 < len(rr) else None
-            if nxt is not None and _dist(nxt[2], cur["ref"]) <= TH and nxt[0] - cur["r"][-1][1] < 2.5 / self.speed:
+            if nxt is not None and _dist(nxt[2], cur["ref"]) <= TH and nxt[0] - cur["r"][-1][1] < 2.5 * self.slow / self.speed:
                 cur.setdefault("spikes", 0)
                 cur["spikes"] += 1
                 i += 1                    # outlier: the picture returned
@@ -233,7 +239,7 @@ class AutoRun:
         k = 0
         while k < len(runs):
             if (out and k + 1 < len(runs) and _dist(out[-1]["ref"], runs[k + 1]["ref"]) <= TH and
-                    runs[k + 1]["edge"] - runs[k]["edge"] < 2.5 / self.speed):
+                    runs[k + 1]["edge"] - runs[k]["edge"] < 2.5 * self.slow / self.speed):
                 out[-1]["r"].extend(runs[k + 1]["r"])
                 k += 2
                 continue
@@ -363,10 +369,20 @@ class AutoRun:
             ar.feed(row[0], row[1], row[2:5])
         return ar
 
+    def _contested(self, w, mean):
+        """Readings lying well inside the segment disagree with the accepted value and are not clearly outnumbered:
+        e.g. a menu that stayed on screen for two long readings after one correct one. Which of the two plateaus is
+        the patch cannot be told — the patch is flagged instead of guessed."""
+        a, b = w
+        inside = [v for (t0, t1, v) in self.readings if t0 >= a + 0.15 / self.speed and t1 <= b - 0.1 / self.speed]
+        dis = sum(1 for v in inside if _dist(v, mean) > 0.08)
+        return dis > 0 and len(inside) - dis < 2 * dis + 1
+
     def analyze(self):
         """Result: patch values + quality. Also works for an unfinished run (whatever was captured)."""
         if self.T0 is None:
-            self.result = {"ok": False, "error": "Start mark not found (12 s of white between grays). "
+            mark_w = [sg for sg in self.segs if sg["role"] == "mark"][0]["dur"]
+            self.result = {"ok": False, "error": "Start mark not found (%d s of white between grays). " % mark_w +
                                                  "The video did not start or the meter is not looking at the screen."}
             return self.result
         segs = self.segs
@@ -388,8 +404,11 @@ class AutoRun:
         max_shift, shifts = 0.0, 0
         prev_d = 0.0
         matched = {j for (k, j), d in path}
+        win = {}                                      # matched segment → its time window (for the consistency check)
         for n_p, ((k, j), d) in enumerate(path):
             r = runs[k]
+            win[j] = (self.T0 + (segs[j]["start"] + d) / self.speed,
+                      self.T0 + (segs[j]["start"] + segs[j]["dur"] + d) / self.speed)
             if abs(d - prev_d) > 0.5:
                 shifts += 1
             prev_d = d
@@ -437,6 +456,8 @@ class AutoRun:
             segs_out.append({"i": sg["i"], "patchId": sg["patchId"], "role": sg["role"], "start": sg["start"],
                              "dur": sg["dur"], "XYZ": mean, "n": cnt, "sd": round(sd, 3) if sd is not None else None,
                              "rejected": rej, "flags": []})
+            if sg["role"] == "patch" and mean and sg["i"] in win and self._contested(win[sg["i"]], mean):
+                segs_out[-1]["flags"].append("unstable")
         white_pid = segs[1]["patchId"]
         end_white = [x for x in segs_out if x["role"] == "end" and x["patchId"] == white_pid]
         end_ok = bool(end_white and end_white[0]["XYZ"] and
@@ -530,7 +551,7 @@ class AutoRun:
             if x["role"] == "patch" and not x["XYZ"]:
                 x["flags"].append("no readings")
             elif x["XYZ"] and x["n"] == 1 and x["XYZ"][1] > 1.0 and \
-                    min((getattr(self, "_pdur", {}).get(x["i"]) or [0.0]) + [99.0]) * self.speed < 2.5:
+                    min((getattr(self, "_pdur", {}).get(x["i"]) or [0.0]) + [99.0]) * self.speed < 2.5 * self.slow:
                 x["flags"].append("single reading")      # bright readings are fast — a single one means something interfered
             elif x["XYZ"] and x["sd"] is not None and x["sd"] > 100 * max(0.01, 2 * y_tolerance(x["XYZ"][1])):
                 x["flags"].append("unstable")

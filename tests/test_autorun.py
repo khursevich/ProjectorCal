@@ -20,7 +20,7 @@ class Sim:
     """Playback: Play `start` s after "Start"; a pause of stall_len s at stall_at (file seconds)."""
 
     def __init__(self, seq, start=3.7, stall_at=None, stall_len=0.0, osd_rate=0.0, seed=1, white=40.0,
-                 before=None, jitter=0.0, stop_at=None):
+                 before=None, jitter=0.0, stop_at=None, slow=1.0):
         self.seq, self.start = seq, start
         self.stall_at, self.stall_len = stall_at, stall_len
         self.rng = random.Random(seed)
@@ -31,6 +31,7 @@ class Sim:
         self.before = before or "PLEX_MENU"
         self.jitter = jitter
         self.stop_at = stop_at
+        self.slow = slow                # meter slower than the i1Display model (ColorMunki Display, Spyder, i1Pro)
 
     def file_time(self, t):
         ft = t - self.start
@@ -59,7 +60,7 @@ class Sim:
         out = []
         while t < until:
             # realistic reading time (from runs on a Vidda): decided by the picture at the reading start
-            dur = Q.read_time_xyz(self.xyz_at(t)) * (1 + self.jitter * self.rng.uniform(-1, 1))
+            dur = self.slow * Q.read_time_xyz(self.xyz_at(t)) * (1 + self.jitter * self.rng.uniform(-1, 1))
             samples = [self.xyz_at(t + dur * (k + 0.5) / 20) for k in range(20)]
             v = tuple(sum(s[i] for s in samples) / 20 for i in range(3))
             k = 1 + self.rng.gauss(0, 0.003)
@@ -171,14 +172,15 @@ class SequenceFiles(unittest.TestCase):
     def test_video_files_match_schedule(self):
         """The built videos (assets/patches/AUTO) must match the schedule in the program."""
         import json
-        for mode in ("sdr", "hdr"):
-            path = os.path.join(CAT.dir, "AUTO", "sequence_%s.json" % mode)
+        for mode, speed in [(m, sp) for sp in Q.SPEEDS for m in ("sdr", "hdr")]:
+            path = os.path.join(CAT.dir, "AUTO", "sequence_%s%s.json" % (mode, "" if speed == "std" else "_" + speed))
             self.assertTrue(os.path.exists(path), "no %s — run tools/make_sequence.py" % path)
             with open(path, encoding="utf-8") as f:
                 built = json.load(f)
-            self.assertEqual(built, json.loads(json.dumps(Q.build(CAT, mode))),
+            self.assertEqual(built, json.loads(json.dumps(Q.build(CAT, mode, speed))),
                              "video is outdated — rebuild with tools/make_sequence.py")
-            self.assertTrue(os.path.exists(os.path.join(CAT.dir, "AUTO", built["file"])))
+            if any(f.endswith(".mp4") for f in os.listdir(os.path.join(CAT.dir, "AUTO"))):   # videos are not in git
+                self.assertTrue(os.path.exists(os.path.join(CAT.dir, "AUTO", built["file"])))
 
 
 class AutoRunRandomized(unittest.TestCase):
@@ -204,6 +206,36 @@ class AutoRunRandomized(unittest.TestCase):
                     if abs(sg["XYZ"][1] / t - 1) > 0.015:
                         silent += 1
         self.assertGreater(total, 1000)
+        self.assertEqual(silent, 0)
+
+
+    def test_no_silent_errors_slow_meter(self):
+        """A meter 2× slower than the i1Display model (ColorMunki Display, Spyder, i1Pro) with the slow video."""
+        from projectorcal.autorun import reliable
+        import random as R
+        silent, total, ok = 0, 0, 0
+        for seed in range(300, 312):
+            r = R.Random(seed)
+            mode = r.choice(["sdr", "hdr"])
+            sim = Sim(Q.build(CAT, mode, "slow"), start=r.uniform(-5, 8),
+                      stall_at=r.choice([None, r.uniform(30, 300)]), stall_len=r.uniform(0.5, 6),
+                      osd_rate=r.choice([0, 0.02, 0.05]), jitter=r.uniform(0, 0.3), seed=seed,
+                      white=r.choice([25, 40, 80]), slow=2.0)
+            ar = AutoRun(sim.seq, expected=Q.expected_rel(CAT, sim.seq), expected_xy=Q.expected_xy(CAT, sim.seq))
+            for x in sim.readings(sim.seq["duration"] + sim.start + (sim.stall_len or 0) + 12):
+                ar.feed(*x)
+            res = ar.analyze()
+            if not res["ok"]:
+                continue
+            ok += 1
+            for sg in res["segments"]:
+                if sg["role"] == "patch" and reliable(sg):
+                    total += 1
+                    t = sim.proj.xyz_for(CAT.get(sg["patchId"]))[1]
+                    if abs(sg["XYZ"][1] / t - 1) > 0.015:
+                        silent += 1
+        self.assertGreaterEqual(ok, 11)
+        self.assertGreater(total, 300)
         self.assertEqual(silent, 0)
 
 
